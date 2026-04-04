@@ -1,0 +1,1493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FarmConnect — Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Epilogue:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --bg:#0d1117; --bg2:#161b22; --bg3:#21262d; --bg4:#30363d;
+  --border:#30363d; --border2:#444c56;
+  --text:#e6edf3; --text2:#8b949e; --text3:#6e7681;
+  --green:#2ea043; --green2:#3fb950; --green3:rgba(46,160,67,.15);
+  --blue:#1f6feb; --blue2:#388bfd; --blue3:rgba(31,111,235,.15);
+  --amber:#d29922; --amber2:#e3b341; --amber3:rgba(210,153,34,.15);
+  --red:#da3633; --red2:#f85149; --red3:rgba(218,54,51,.15);
+  --purple:#6e40c9; --purple2:#a371f7; --purple3:rgba(110,64,201,.15);
+  --cyan:#0598bc; --cyan2:#39c5cf; --cyan3:rgba(5,152,188,.15);
+  --shadow:0 4px 24px rgba(0,0,0,.4);
+  --r:12px; --r2:8px; --r3:6px
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Epilogue',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+  width:240px;min-height:100vh;background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;
+  z-index:100
+}
+.sidebar-logo{
+  padding:20px;border-bottom:1px solid var(--border);
+  font-family:'Syne',sans-serif;font-size:20px;font-weight:800
+}
+.sidebar-logo span{color:var(--green2)}
+.sidebar-logo small{display:block;font-size:11px;font-weight:400;color:var(--text2);font-family:'Epilogue',sans-serif;margin-top:2px}
+.nav-section{padding:12px 12px 4px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 16px;margin:1px 8px;
+  border-radius:var(--r2);cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--text2);
+  border:none;background:transparent;width:calc(100% - 16px);
+  text-align:left;transition:all .15s
+}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--blue3);color:var(--blue2)}
+.nav-icon{font-size:16px;width:20px;text-align:center}
+.nav-badge{
+  margin-left:auto;background:var(--red);color:#fff;
+  font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px
+}
+.sidebar-footer{
+  margin-top:auto;padding:16px;border-top:1px solid var(--border)
+}
+.admin-chip{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;background:var(--bg3);border-radius:var(--r2);margin-bottom:10px
+}
+.admin-avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--blue3);display:flex;align-items:center;
+  justify-content:center;font-size:14px;color:var(--blue2)
+}
+.admin-info{font-size:12px}
+.admin-name{font-weight:600;color:var(--text)}
+.admin-role{color:var(--text2)}
+.logout-nav-btn{
+  width:100%;padding:8px;background:var(--red3);color:var(--red2);
+  border:1px solid rgba(218,54,51,.3);border-radius:var(--r2);
+  font-family:'Epilogue',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:all .2s
+}
+.logout-nav-btn:hover{background:var(--red);color:#fff}
+
+/* ===== MAIN ===== */
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* ===== TOPBAR ===== */
+.topbar{
+  height:56px;background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:16px;
+  position:sticky;top:0;z-index:50
+}
+.topbar-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--text)}
+.topbar-search{
+  margin-left:auto;display:flex;align-items:center;gap:8px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r2);padding:6px 14px;
+}
+.topbar-search input{
+  background:transparent;border:none;outline:none;
+  font-family:'Epilogue',sans-serif;font-size:13px;color:var(--text);
+  width:200px
+}
+.topbar-search input::placeholder{color:var(--text3)}
+.notif-btn{
+  background:var(--bg3);border:1px solid var(--border);
+  width:36px;height:36px;border-radius:var(--r2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:16px;position:relative
+}
+.notif-dot{
+  position:absolute;top:6px;right:6px;
+  width:8px;height:8px;background:var(--red2);border-radius:50%
+}
+
+/* ===== PAGES ===== */
+.page{display:none;padding:24px;animation:fadeIn .2s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== SECTION TITLE ===== */
+.sec-title{
+  font-family:'Syne',sans-serif;font-size:20px;font-weight:700;
+  margin-bottom:20px;display:flex;align-items:center;gap:10px
+}
+.sec-actions{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sec-actions .sec-title{margin-bottom:0}
+
+/* ===== STAT CARDS ===== */
+.stats-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:16px;margin-bottom:24px
+}
+.stat-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);padding:20px;
+  display:flex;flex-direction:column;gap:10px;
+  transition:border-color .2s,transform .2s;cursor:default
+}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.stat-top{display:flex;justify-content:space-between;align-items:flex-start}
+.stat-icon-wrap{
+  width:40px;height:40px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:20px
+}
+.stat-icon-wrap.green{background:var(--green3)}
+.stat-icon-wrap.blue{background:var(--blue3)}
+.stat-icon-wrap.amber{background:var(--amber3)}
+.stat-icon-wrap.red{background:var(--red3)}
+.stat-icon-wrap.purple{background:var(--purple3)}
+.stat-icon-wrap.cyan{background:var(--cyan3)}
+.stat-change{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.stat-change.up{background:var(--green3);color:var(--green2)}
+.stat-change.down{background:var(--red3);color:var(--red2)}
+.stat-value{font-family:'Syne',sans-serif;font-size:28px;font-weight:800}
+.stat-label{font-size:12px;color:var(--text2);font-weight:500}
+
+/* ===== CARDS ===== */
+.card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);padding:20px;margin-bottom:16px
+}
+.card-header{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:16px
+}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;display:flex;align-items:center;gap:8px}
+
+/* ===== TABLES ===== */
+.table-wrap{overflow-x:auto;border-radius:var(--r2);border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--bg3)}
+th{padding:11px 16px;text-align:left;font-size:11px;font-weight:700;
+   color:var(--text2);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+td{padding:11px 16px;border-top:1px solid var(--border);vertical-align:middle}
+tbody tr:hover{background:var(--bg3)}
+.table-empty{text-align:center;padding:40px;color:var(--text2)}
+
+/* ===== BADGES ===== */
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.badge-green{background:var(--green3);color:var(--green2)}
+.badge-blue{background:var(--blue3);color:var(--blue2)}
+.badge-amber{background:var(--amber3);color:var(--amber2)}
+.badge-red{background:var(--red3);color:var(--red2)}
+.badge-purple{background:var(--purple3);color:var(--purple2)}
+.badge-gray{background:var(--bg3);color:var(--text2)}
+
+/* ===== BUTTONS ===== */
+.btn{
+  padding:7px 16px;border:none;border-radius:var(--r2);
+  font-family:'Epilogue',sans-serif;font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px
+}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:var(--green2)}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-blue:hover{background:var(--blue2)}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:var(--red2)}
+.btn-amber{background:var(--amber);color:#fff}
+.btn-amber:hover{background:var(--amber2)}
+.btn-ghost{background:var(--bg3);color:var(--text);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--bg4)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-full{width:100%;justify-content:center;padding:11px}
+
+/* ===== FORMS ===== */
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:11px;font-weight:700;color:var(--text2);
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:9px 12px;background:var(--bg3);
+  border:1px solid var(--border);border-radius:var(--r2);
+  font-family:'Epilogue',sans-serif;font-size:13px;color:var(--text);
+  outline:none;transition:border-color .2s
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  border-color:var(--blue2)
+}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* ===== MODAL ===== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.7);
+  backdrop-filter:blur(4px);z-index:400;
+  display:none;align-items:center;justify-content:center
+}
+.modal-overlay.open{display:flex}
+.modal{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:var(--r);width:100%;max-width:500px;
+  max-height:90vh;overflow-y:auto;
+  box-shadow:0 40px 100px rgba(0,0,0,.6);
+  animation:popIn .25s cubic-bezier(.34,1.56,.64,1)
+}
+@keyframes popIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+.modal-header{
+  padding:18px 20px;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  position:sticky;top:0;background:var(--bg2);z-index:1
+}
+.modal-header h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+.close-btn{
+  background:var(--bg3);border:1px solid var(--border);
+  width:30px;height:30px;border-radius:6px;
+  color:var(--text2);font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center
+}
+.modal-body{padding:20px}
+
+/* ===== CHART ===== */
+.chart-wrap{position:relative;height:240px}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+
+/* ===== FILTER BAR ===== */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-bar input,.filter-bar select{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--r2);padding:7px 12px;
+  font-family:'Epilogue',sans-serif;font-size:12px;color:var(--text);outline:none
+}
+
+/* ===== ACTIVITY FEED ===== */
+.activity-item{
+  display:flex;gap:12px;padding:12px 0;
+  border-bottom:1px solid var(--border)
+}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:14px
+}
+.activity-dot.green{background:var(--green3)}
+.activity-dot.blue{background:var(--blue3)}
+.activity-dot.amber{background:var(--amber3)}
+.activity-dot.red{background:var(--red3)}
+.activity-text{font-size:13px;line-height:1.5}
+.activity-time{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* ===== ANNOUNCE ===== */
+.announce-card{
+  background:linear-gradient(135deg,var(--blue3),var(--purple3));
+  border:1px solid var(--blue);border-radius:var(--r);
+  padding:20px;margin-bottom:16px
+}
+
+/* ===== TOAST ===== */
+.toast{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--bg3);border:1px solid var(--border2);
+  color:var(--text);padding:12px 20px;border-radius:var(--r2);
+  font-size:13px;z-index:500;opacity:0;
+  transform:translateY(10px);transition:all .3s;pointer-events:none;
+  box-shadow:var(--shadow)
+}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.success{border-color:var(--green);color:var(--green2)}
+.toast.error{border-color:var(--red);color:var(--red2)}
+
+/* ===== PROFILE ROW ===== */
+.profile-row{display:flex;align-items:center;gap:10px}
+.profile-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--blue3);display:flex;align-items:center;
+  justify-content:center;font-size:14px;font-weight:700;
+  color:var(--blue2);flex-shrink:0
+}
+
+/* ===== DETAIL PANEL ===== */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.detail-item{background:var(--bg3);border-radius:var(--r2);padding:12px}
+.detail-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.detail-value{font-size:14px;font-weight:600}
+
+/* ===== REPORTS ===== */
+.report-metric{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);padding:16px;text-align:center
+}
+.report-metric .val{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin:6px 0}
+.report-metric .lbl{font-size:12px;color:var(--text2)}
+
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    🌾 Farm<span>Connect</span>
+    <small>Admin Control Panel</small>
+  </div>
+
+  <div style="overflow-y:auto;flex:1">
+    <div class="nav-section">Overview</div>
+    <button class="nav-item active" onclick="showPage('dashboard',this)">
+      <span class="nav-icon">📊</span> Dashboard
+    </button>
+
+    <div class="nav-section">Management</div>
+    <button class="nav-item" onclick="showPage('farmers',this)">
+      <span class="nav-icon">👨‍🌾</span> Farmers
+    </button>
+    <button class="nav-item" onclick="showPage('buyers',this)">
+      <span class="nav-icon">🛒</span> Buyers
+    </button>
+    <button class="nav-item" onclick="showPage('products',this)">
+      <span class="nav-icon">🌾</span> Products
+      <span class="nav-badge" id="pendingBadge">0</span>
+    </button>
+    <button class="nav-item" onclick="showPage('orders',this)">
+      <span class="nav-icon">📦</span> Orders
+    </button>
+
+    <div class="nav-section">Finance</div>
+    <button class="nav-item" onclick="showPage('payments',this)">
+      <span class="nav-icon">💳</span> Payments
+    </button>
+    <button class="nav-item" onclick="showPage('refunds',this)">
+      <span class="nav-icon">🔄</span> Refunds
+      <span class="nav-badge" id="refundBadge">0</span>
+    </button>
+
+    <div class="nav-section">Tools</div>
+    <button class="nav-item" onclick="showPage('reports',this)">
+      <span class="nav-icon">📈</span> Reports
+    </button>
+    <button class="nav-item" onclick="showPage('announcements',this)">
+      <span class="nav-icon">📢</span> Announcements
+    </button>
+    <button class="nav-item" onclick="showPage('settings',this)">
+      <span class="nav-icon">⚙️</span> Settings
+    </button>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="admin-chip">
+      <div class="admin-avatar">A</div>
+      <div class="admin-info">
+        <div class="admin-name">Admin</div>
+        <div class="admin-role">Super Admin</div>
+      </div>
+    </div>
+    <button class="logout-nav-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-title" id="topbarTitle">Dashboard</div>
+  <div class="topbar-search">
+    <span style="color:var(--text2)">🔍</span>
+    <input id="globalSearch" placeholder="Search farmers, buyers, orders..." oninput="globalSearch(this.value)">
+  </div>
+  <div class="notif-btn" onclick="showPage('refunds',document.querySelectorAll('.nav-item')[7])">
+    🔔<div class="notif-dot"></div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="page active" id="pageDashboard">
+  <div class="stats-grid" id="statsGrid">
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon-wrap green">👨‍🌾</div>
+        <span class="stat-change up" id="chgFarmers">+0</span>
+      </div>
+      <div class="stat-value" id="totalFarmers">—</div>
+      <div class="stat-label">Total Farmers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon-wrap blue">🛒</div>
+        <span class="stat-change up" id="chgBuyers">+0</span>
+      </div>
+      <div class="stat-value" id="totalBuyers">—</div>
+      <div class="stat-label">Total Buyers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon-wrap amber">🌾</div>
+        <span class="stat-change up">Active</span>
+      </div>
+      <div class="stat-value" id="totalProducts">—</div>
+      <div class="stat-label">Products Listed</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon-wrap purple">📦</div>
+        <span class="stat-change up">+12%</span>
+      </div>
+      <div class="stat-value" id="totalOrders">—</div>
+      <div class="stat-label">Total Orders</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon-wrap cyan">💰</div>
+        <span class="stat-change up">+8%</span>
+      </div>
+      <div class="stat-value" id="totalRevenue">—</div>
+      <div class="stat-label">Total Revenue</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-top">
+        <div class="stat-icon-wrap red">🔄</div>
+        <span class="stat-change down" id="chgRefunds">Pending</span>
+      </div>
+      <div class="stat-value" id="pendingRefundsCount">0</div>
+      <div class="stat-label">Pending Refunds</div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📈 Revenue (6 months)</div>
+      </div>
+      <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📦 Orders by Status</div>
+      </div>
+      <div class="chart-wrap"><canvas id="ordersChart"></canvas></div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">⚡ Recent Activity</div>
+        <button class="btn btn-ghost btn-sm" onclick="loadActivity()">Refresh</button>
+      </div>
+      <div id="activityFeed"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">⏳ Pending Approvals</div>
+        <button class="btn btn-blue btn-sm" onclick="showPage('products',document.querySelectorAll('.nav-item')[4])">View All</button>
+      </div>
+      <div id="pendingList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FARMERS ===== -->
+<div class="page" id="pageFarmers">
+  <div class="sec-actions">
+    <div class="sec-title">👨‍🌾 Farmers</div>
+    <button class="btn btn-green" onclick="openModal('addFarmerModal')">+ Add Farmer</button>
+  </div>
+  <div class="filter-bar">
+    <input id="farmerSearch" placeholder="🔍 Search farmers..." oninput="filterFarmers(this.value)">
+    <select id="farmerStateFilter" onchange="filterFarmers()">
+      <option value="">All States</option>
+      <option>Bihar</option><option>UP</option><option>Punjab</option>
+      <option>Haryana</option><option>Rajasthan</option><option>MP</option>
+      <option>Gujarat</option><option>Maharashtra</option>
+    </select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Farmer</th><th>Phone</th><th>Village</th><th>State</th>
+        <th>Products</th><th>Joined</th><th>Status</th><th>Actions</th>
+      </tr></thead>
+      <tbody id="farmersTable"><tr><td colspan="8" class="table-empty">Loading...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== BUYERS ===== -->
+<div class="page" id="pageBuyers">
+  <div class="sec-actions">
+    <div class="sec-title">🛒 Buyers</div>
+    <button class="btn btn-green" onclick="openModal('addBuyerModal')">+ Add Buyer</button>
+  </div>
+  <div class="filter-bar">
+    <input id="buyerSearch" placeholder="🔍 Search buyers..." oninput="filterBuyers(this.value)">
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Buyer</th><th>Email</th><th>Phone</th>
+        <th>Orders</th><th>Joined</th><th>Status</th><th>Actions</th>
+      </tr></thead>
+      <tbody id="buyersTable"><tr><td colspan="7" class="table-empty">Loading...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== PRODUCTS ===== -->
+<div class="page" id="pageProducts">
+  <div class="sec-actions">
+    <div class="sec-title">🌾 Products</div>
+  </div>
+  <div class="filter-bar">
+    <input id="productSearch" placeholder="🔍 Search products..." oninput="filterProducts(this.value)">
+    <select id="productStatusFilter" onchange="filterProducts()">
+      <option value="">All Status</option>
+      <option>Pending</option><option>Approved</option>
+      <option>Rejected</option><option>Hidden</option>
+    </select>
+    <select id="productCatFilter" onchange="filterProducts()">
+      <option value="">All Categories</option>
+      <option>Grains</option><option>Vegetables</option>
+      <option>Fruits</option><option>Dairy</option><option>Spices</option>
+    </select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Product</th><th>Farmer</th><th>Category</th>
+        <th>Price</th><th>Qty</th><th>Status</th><th>Actions</th>
+      </tr></thead>
+      <tbody id="productsTable"><tr><td colspan="7" class="table-empty">Loading...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== ORDERS ===== -->
+<div class="page" id="pageOrders">
+  <div class="sec-title">📦 Orders</div>
+  <div class="filter-bar">
+    <input id="orderSearch" placeholder="🔍 Search orders...">
+    <select id="orderStatusFilter" onchange="filterOrdersAdmin()">
+      <option value="">All Status</option>
+      <option>Placed</option><option>Delivered</option>
+      <option>Cancelled</option><option>Refunded</option>
+    </select>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Order ID</th><th>Buyer</th><th>Amount</th>
+        <th>Status</th><th>Date</th><th>Method</th><th>Actions</th>
+      </tr></thead>
+      <tbody id="ordersTable"><tr><td colspan="7" class="table-empty">Loading...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== PAYMENTS ===== -->
+<div class="page" id="pagePayments">
+  <div class="sec-title">💳 Payments</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px">
+    <div class="report-metric">
+      <div class="lbl">Total Collected</div>
+      <div class="val" id="payCollected" style="color:var(--green2)">₹0</div>
+    </div>
+    <div class="report-metric">
+      <div class="lbl">Refunds Issued</div>
+      <div class="val" id="payIssued" style="color:var(--red2)">₹0</div>
+    </div>
+    <div class="report-metric">
+      <div class="lbl">Net Revenue</div>
+      <div class="val" id="payNet" style="color:var(--blue2)">₹0</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:16px">💰 Payment Transactions</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Txn ID</th><th>Buyer</th><th>Amount</th>
+          <th>Method</th><th>Status</th><th>Date</th>
+        </tr></thead>
+        <tbody id="paymentsTable"><tr><td colspan="6" class="table-empty">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REFUNDS ===== -->
+<div class="page" id="pageRefunds">
+  <div class="sec-title">🔄 Refund Requests</div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Refund ID</th><th>Buyer</th><th>Order</th>
+        <th>Amount</th><th>Reason</th><th>Status</th><th>Actions</th>
+      </tr></thead>
+      <tbody id="refundsTable"><tr><td colspan="7" class="table-empty">Loading...</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== REPORTS ===== -->
+<div class="page" id="pageReports">
+  <div class="sec-actions">
+    <div class="sec-title">📈 Reports & Analytics</div>
+    <button class="btn btn-blue" onclick="exportCSV()">⬇ Export CSV</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:20px" id="reportMetrics"></div>
+  <div class="charts-grid">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">📊 Monthly Revenue</div>
+      <div class="chart-wrap"><canvas id="reportRevenueChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">🥧 Product Categories</div>
+      <div class="chart-wrap"><canvas id="reportCatChart"></canvas></div>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">🏆 Top Farmers</div>
+      <div id="topFarmers"></div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px">🌾 Top Products</div>
+      <div id="topProducts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ANNOUNCEMENTS ===== -->
+<div class="page" id="pageAnnouncements">
+  <div class="sec-title">📢 Announcements</div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:16px">✏️ Create Announcement</div>
+    <div class="form-group">
+      <label>Title</label>
+      <input id="annTitle" placeholder="e.g. New season MSP rates released">
+    </div>
+    <div class="form-group">
+      <label>Message</label>
+      <textarea id="annMsg" rows="4" placeholder="Write your announcement here..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Target Audience</label>
+      <select id="annTarget">
+        <option value="all">All (Farmers + Buyers)</option>
+        <option value="farmers">Farmers only</option>
+        <option value="buyers">Buyers only</option>
+      </select>
+    </div>
+    <div id="annMsg2" style="display:none;padding:10px;border-radius:8px;font-size:13px;margin-bottom:10px;background:var(--green3);color:var(--green2);border:1px solid var(--green)"></div>
+    <button class="btn btn-green btn-full" onclick="publishAnnouncement()">📢 Publish Announcement</button>
+  </div>
+  <div class="card">
+    <div class="card-title" style="margin-bottom:14px">📋 Published Announcements</div>
+    <div id="annList"></div>
+  </div>
+</div>
+
+<!-- ===== SETTINGS ===== -->
+<div class="page" id="pageSettings">
+  <div class="sec-title">⚙️ Settings</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">👤 Admin Profile</div>
+      <div class="form-group"><label>Username</label><input value="admin" id="setUsername"></div>
+      <div class="form-group"><label>Current Password</label><input type="password" id="setCurrPass" placeholder="Enter current password"></div>
+      <div class="form-group"><label>New Password</label><input type="password" id="setNewPass" placeholder="New password"></div>
+      <div class="form-group"><label>Confirm Password</label><input type="password" id="setConfPass" placeholder="Confirm new password"></div>
+      <button class="btn btn-blue btn-full" onclick="saveAdminProfile()">💾 Save Changes</button>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:16px">🔧 Platform Settings</div>
+      <div class="form-group"><label>Platform Fee (%)</label><input type="number" id="setPlatformFee" value="2" min="0" max="20"></div>
+      <div class="form-group"><label>Min Order Amount (₹)</label><input type="number" id="setMinOrder" value="50"></div>
+      <div class="form-group"><label>Max Refund Days</label><input type="number" id="setRefundDays" value="7"></div>
+      <div class="form-group"><label>Support Email</label><input id="setSupportEmail" value="support@farmconnect.com"></div>
+      <div class="form-group"><label>Support Phone</label><input id="setSupportPhone" value="+91-765-4612124"></div>
+      <button class="btn btn-green btn-full" onclick="savePlatformSettings()">💾 Save Settings</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- end main -->
+
+<!-- ===== MODALS ===== -->
+
+<!-- View Farmer Modal -->
+<div class="modal-overlay" id="farmerDetailModal">
+<div class="modal">
+  <div class="modal-header">
+    <h3 id="farmerDetailName">Farmer Detail</h3>
+    <button class="close-btn" onclick="closeModal('farmerDetailModal')">✕</button>
+  </div>
+  <div class="modal-body" id="farmerDetailBody"></div>
+</div>
+</div>
+
+<!-- View Buyer Modal -->
+<div class="modal-overlay" id="buyerDetailModal">
+<div class="modal">
+  <div class="modal-header">
+    <h3 id="buyerDetailName">Buyer Detail</h3>
+    <button class="close-btn" onclick="closeModal('buyerDetailModal')">✕</button>
+  </div>
+  <div class="modal-body" id="buyerDetailBody"></div>
+</div>
+</div>
+
+<!-- Add Farmer Modal -->
+<div class="modal-overlay" id="addFarmerModal">
+<div class="modal">
+  <div class="modal-header">
+    <h3>➕ Add Farmer</h3>
+    <button class="close-btn" onclick="closeModal('addFarmerModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-row">
+      <div class="form-group"><label>Full Name</label><input id="af_name" placeholder="Farmer name"></div>
+      <div class="form-group"><label>Phone</label><input id="af_phone" placeholder="Mobile number"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Email</label><input id="af_email" placeholder="email@gmail.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="af_pass" placeholder="Password"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Village</label><input id="af_village" placeholder="Village name"></div>
+      <div class="form-group"><label>State</label>
+        <select id="af_state">
+          <option value="">Select State</option>
+          <option>Bihar</option><option>UP</option><option>Punjab</option>
+          <option>Haryana</option><option>Rajasthan</option><option>MP</option>
+          <option>Gujarat</option><option>Maharashtra</option>
+        </select>
+      </div>
+    </div>
+    <div id="addFarmerMsg" style="display:none;padding:10px;border-radius:8px;font-size:13px;margin-bottom:10px"></div>
+    <button class="btn btn-green btn-full" onclick="addFarmer()">✅ Add Farmer</button>
+  </div>
+</div>
+</div>
+
+<!-- Add Buyer Modal -->
+<div class="modal-overlay" id="addBuyerModal">
+<div class="modal">
+  <div class="modal-header">
+    <h3>➕ Add Buyer</h3>
+    <button class="close-btn" onclick="closeModal('addBuyerModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-row">
+      <div class="form-group"><label>Full Name</label><input id="ab_name" placeholder="Buyer name"></div>
+      <div class="form-group"><label>Phone</label><input id="ab_phone" placeholder="Mobile number"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Email</label><input id="ab_email" placeholder="email@gmail.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="ab_pass" placeholder="Password"></div>
+    </div>
+    <div class="form-group"><label>Address</label><input id="ab_address" placeholder="City, State"></div>
+    <div id="addBuyerMsg" style="display:none;padding:10px;border-radius:8px;font-size:13px;margin-bottom:10px"></div>
+    <button class="btn btn-green btn-full" onclick="addBuyer()">✅ Add Buyer</button>
+  </div>
+</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "http://localhost:5000";
+
+// ===== STATE =====
+let farmers  = [];
+let buyers   = [];
+let products = [];
+let orders   = [];
+let refunds  = JSON.parse(localStorage.getItem("fc_admin_refunds")) || [
+  { id:"REF001", buyer:"Buyer3", order:"#ORD003", amount:900, reason:"Item damaged", status:"Pending", date:"2026-03-20" },
+  { id:"REF002", buyer:"Buyer7", order:"#ORD007", amount:1200, reason:"Wrong item", status:"Pending", date:"2026-03-21" },
+  { id:"REF003", buyer:"Buyer1", order:"#ORD001", amount:500, reason:"Not delivered", status:"Approved", date:"2026-03-15" }
+];
+let announcements = JSON.parse(localStorage.getItem("fc_announcements")) || [];
+let platformSettings = JSON.parse(localStorage.getItem("fc_settings")) || { fee:2, minOrder:50, refundDays:7 };
+
+// ===== PAGE NAV =====
+function showPage(name, btn) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById("page" + name.charAt(0).toUpperCase() + name.slice(1)).classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+  document.getElementById("topbarTitle").innerText = {
+    dashboard:"Dashboard", farmers:"Farmers Management",
+    buyers:"Buyers Management", products:"Products Management",
+    orders:"Orders Management", payments:"Payments",
+    refunds:"Refund Requests", reports:"Reports & Analytics",
+    announcements:"Announcements", settings:"Settings"
+  }[name] || name;
+
+  const loaders = {
+    dashboard: loadDashboard, farmers: loadFarmers,
+    buyers: loadBuyers, products: loadProducts,
+    orders: loadOrders, payments: loadPayments,
+    refunds: loadRefunds, reports: loadReports,
+    announcements: loadAnnouncements
+  };
+  if (loaders[name]) loaders[name]();
+}
+
+// ===== API HELPERS =====
+async function apiFetch(url) {
+  try {
+    const res = await fetch(API + url);
+    return await res.json();
+  } catch { return null; }
+}
+
+async function apiPost(url, body) {
+  try {
+    const res = await fetch(API + url, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    return await res.json();
+  } catch { return null; }
+}
+
+// ===== DASHBOARD =====
+async function loadDashboard() {
+  const stats = await apiFetch("/admin-stats");
+  if (stats) {
+    document.getElementById("totalFarmers").innerText  = stats.farmers;
+    document.getElementById("totalBuyers").innerText   = stats.buyers;
+    document.getElementById("totalProducts").innerText = stats.products;
+    document.getElementById("totalOrders").innerText   = stats.orders;
+    document.getElementById("totalRevenue").innerText  = "₹" + Number(stats.revenue || 0).toLocaleString("en-IN");
+  }
+
+  // Pending badge
+  const prods = await apiFetch("/admin-products");
+  if (prods) {
+    const pending = prods.filter(p => p.status === "Pending").length;
+    document.getElementById("pendingBadge").innerText = pending;
+    document.getElementById("pendingRefundsCount").innerText = refunds.filter(r=>r.status==="Pending").length;
+    document.getElementById("refundBadge").innerText = refunds.filter(r=>r.status==="Pending").length;
+    renderPendingList(prods.filter(p => p.status === "Pending").slice(0, 5));
+  }
+
+  loadActivity();
+  drawDashboardCharts();
+}
+
+function renderPendingList(items) {
+  const box = document.getElementById("pendingList");
+  if (!items.length) { box.innerHTML = `<div style="color:var(--text2);text-align:center;padding:20px">No pending approvals</div>`; return; }
+  box.innerHTML = items.map(p => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:600">${p.name}</div>
+        <div style="font-size:11px;color:var(--text2)">₹${p.price}/kg · ${p.category || 'N/A'}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-green btn-sm" onclick="approveProduct(${p.product_id})">✓</button>
+        <button class="btn btn-red btn-sm" onclick="rejectProduct(${p.product_id})">✗</button>
+      </div>
+    </div>`).join("");
+}
+
+function loadActivity() {
+  const activities = [
+    { icon:"🌾", color:"green", text:"New product <b>Basmati Rice</b> submitted for approval", time:"2 mins ago" },
+    { icon:"🛒", color:"blue",  text:"New buyer <b>Buyer101</b> registered", time:"15 mins ago" },
+    { icon:"📦", color:"amber", text:"Order <b>#ORD045</b> marked as Delivered", time:"1 hour ago" },
+    { icon:"🔄", color:"red",   text:"Refund requested for order <b>#ORD033</b>", time:"2 hours ago" },
+    { icon:"👨‍🌾", color:"green", text:"Farmer <b>Ramesh Kumar</b> joined from Bihar", time:"3 hours ago" },
+    { icon:"💰", color:"blue",  text:"Payment of <b>₹4,500</b> received via UPI", time:"4 hours ago" }
+  ];
+  document.getElementById("activityFeed").innerHTML = activities.map(a => `
+    <div class="activity-item">
+      <div class="activity-dot ${a.color}">${a.icon}</div>
+      <div><div class="activity-text">${a.text}</div><div class="activity-time">${a.time}</div></div>
+    </div>`).join("");
+}
+
+function drawDashboardCharts() {
+  // Revenue chart
+  const rCtx = document.getElementById("revenueChart");
+  if (window._rChart) window._rChart.destroy();
+  window._rChart = new Chart(rCtx, {
+    type: "line",
+    data: {
+      labels: ["Oct","Nov","Dec","Jan","Feb","Mar"],
+      datasets: [{
+        label: "Revenue (₹)",
+        data: [85000,120000,98000,145000,132000,175000],
+        borderColor: "#2ea043", backgroundColor: "rgba(46,160,67,.1)",
+        borderWidth: 2.5, fill: true, tension: 0.4, pointBackgroundColor: "#2ea043"
+      }]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, grid:{ color:"rgba(255,255,255,.05)" }, ticks:{ color:"#8b949e" } },
+               x:{ grid:{ display:false }, ticks:{ color:"#8b949e" } } } }
+  });
+
+  // Orders donut
+  const oCtx = document.getElementById("ordersChart");
+  if (window._oChart) window._oChart.destroy();
+  window._oChart = new Chart(oCtx, {
+    type: "doughnut",
+    data: {
+      labels: ["Delivered","Placed","Cancelled","Refunded"],
+      datasets: [{ data:[65,20,8,7],
+        backgroundColor:["#2ea043","#1f6feb","#da3633","#d29922"],
+        borderWidth:0, hoverOffset:8 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:"68%",
+      plugins:{ legend:{ position:"bottom", labels:{ color:"#8b949e", padding:16, font:{ size:11 } } } } }
+  });
+}
+
+// ===== FARMERS =====
+async function loadFarmers() {
+  const data = await apiFetch("/admin-farmers");
+  farmers = data || generateDemoFarmers();
+  renderFarmers(farmers);
+}
+
+function generateDemoFarmers() {
+  return Array.from({length:10}, (_,i) => ({
+    farmer_id: i+1, name:`Farmer${i+1}`,
+    email:`farmer${i+1}@gmail.com`, phone:`800000000${i+1}`,
+    village:`Village${i+1}`, state:["Bihar","UP","Punjab","Haryana","MP"][i%5],
+    created_at: new Date(2026,0,i+1).toLocaleDateString("en-IN"), status:"Active"
+  }));
+}
+
+function renderFarmers(data) {
+  const tb = document.getElementById("farmersTable");
+  if (!data.length) { tb.innerHTML = `<tr><td colspan="8" class="table-empty">No farmers found</td></tr>`; return; }
+  tb.innerHTML = data.map(f => {
+    const initials = f.name.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase();
+    return `<tr>
+      <td><div class="profile-row">
+        <div class="profile-avatar">${initials}</div>
+        <div><div style="font-weight:600;font-size:13px">${f.name}</div>
+             <div style="font-size:11px;color:var(--text2)">${f.email || '—'}</div></div>
+      </div></td>
+      <td>${f.phone || '—'}</td>
+      <td>${f.village || '—'}</td>
+      <td><span class="badge badge-blue">${f.state || '—'}</span></td>
+      <td>—</td>
+      <td style="font-size:12px;color:var(--text2)">${f.created_at ? new Date(f.created_at).toLocaleDateString("en-IN") : '—'}</td>
+      <td><span class="badge badge-green">Active</span></td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="viewFarmer(${f.farmer_id})">👁 View</button>
+        <button class="btn btn-red btn-sm" style="margin-left:4px" onclick="blockUser('farmer',${f.farmer_id},'${f.name}')">🚫</button>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function filterFarmers(val) {
+  val = (val || document.getElementById("farmerSearch").value || "").toLowerCase();
+  const state = document.getElementById("farmerStateFilter").value;
+  renderFarmers(farmers.filter(f =>
+    (!val || f.name?.toLowerCase().includes(val) || f.phone?.includes(val) || f.email?.toLowerCase().includes(val)) &&
+    (!state || f.state === state)
+  ));
+}
+
+function viewFarmer(id) {
+  const f = farmers.find(x => x.farmer_id === id);
+  if (!f) return;
+  document.getElementById("farmerDetailName").innerText = f.name;
+  document.getElementById("farmerDetailBody").innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Email</div><div class="detail-value">${f.email||'—'}</div></div>
+      <div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value">${f.phone||'—'}</div></div>
+      <div class="detail-item"><div class="detail-label">Village</div><div class="detail-value">${f.village||'—'}</div></div>
+      <div class="detail-item"><div class="detail-label">State</div><div class="detail-value">${f.state||'—'}</div></div>
+      <div class="detail-item"><div class="detail-label">Joined</div><div class="detail-value">${f.created_at ? new Date(f.created_at).toLocaleDateString("en-IN") : '—'}</div></div>
+      <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value"><span class="badge badge-green">Active</span></div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-amber" onclick="closeModal('farmerDetailModal');showToast('⚠️ Farmer suspended','amber')">⏸ Suspend</button>
+      <button class="btn btn-red" onclick="closeModal('farmerDetailModal');showToast('🚫 Farmer blocked','error')">🚫 Block</button>
+      <button class="btn btn-blue" style="margin-left:auto" onclick="closeModal('farmerDetailModal')">Close</button>
+    </div>`;
+  openModal("farmerDetailModal");
+}
+
+async function addFarmer() {
+  const name=document.getElementById("af_name").value.trim();
+  const phone=document.getElementById("af_phone").value.trim();
+  const email=document.getElementById("af_email").value.trim();
+  const pass=document.getElementById("af_pass").value.trim();
+  const village=document.getElementById("af_village").value.trim();
+  const state=document.getElementById("af_state").value;
+  const msgEl=document.getElementById("addFarmerMsg");
+
+  if (!name||!phone||!email||!pass) { showInlineMsg(msgEl,"Please fill all required fields","error"); return; }
+
+  const res = await apiPost("/api/farmer/register", { name,email,phone,password:pass,village,state });
+  if (res && res.success) {
+    showInlineMsg(msgEl,"✅ Farmer added successfully!","success");
+    showToast("Farmer added ✅","success");
+    loadFarmers();
+  } else {
+    showInlineMsg(msgEl, res?.message || "Failed to add farmer","error");
+  }
+}
+
+// ===== BUYERS =====
+async function loadBuyers() {
+  const data = await apiFetch("/admin-buyers");
+  buyers = data || generateDemoBuyers();
+  renderBuyers(buyers);
+}
+
+function generateDemoBuyers() {
+  return Array.from({length:10}, (_,i) => ({
+    buyer_id: i+1, name:`Buyer${i+1}`,
+    email:`buyer${i+1}@gmail.com`, phone:`900000000${i+1}`,
+    created_at: new Date(2026,0,i+2).toLocaleDateString("en-IN")
+  }));
+}
+
+function renderBuyers(data) {
+  const tb = document.getElementById("buyersTable");
+  if (!data.length) { tb.innerHTML = `<tr><td colspan="7" class="table-empty">No buyers found</td></tr>`; return; }
+  tb.innerHTML = data.map(b => {
+    const initials = b.name.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase();
+    return `<tr>
+      <td><div class="profile-row">
+        <div class="profile-avatar" style="background:var(--blue3);color:var(--blue2)">${initials}</div>
+        <div style="font-weight:600;font-size:13px">${b.name}</div>
+      </div></td>
+      <td style="font-size:12px">${b.email||'—'}</td>
+      <td>${b.phone||'—'}</td>
+      <td>—</td>
+      <td style="font-size:12px;color:var(--text2)">${b.created_at ? new Date(b.created_at).toLocaleDateString("en-IN") : '—'}</td>
+      <td><span class="badge badge-green">Active</span></td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="viewBuyer(${b.buyer_id})">👁 View</button>
+        <button class="btn btn-red btn-sm" style="margin-left:4px" onclick="blockUser('buyer',${b.buyer_id},'${b.name}')">🚫</button>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function filterBuyers(val) {
+  val = (val||"").toLowerCase();
+  renderBuyers(buyers.filter(b =>
+    !val || b.name?.toLowerCase().includes(val) || b.email?.toLowerCase().includes(val) || b.phone?.includes(val)
+  ));
+}
+
+function viewBuyer(id) {
+  const b = buyers.find(x => x.buyer_id === id);
+  if (!b) return;
+  document.getElementById("buyerDetailName").innerText = b.name;
+  document.getElementById("buyerDetailBody").innerHTML = `
+    <div class="detail-grid">
+      <div class="detail-item"><div class="detail-label">Email</div><div class="detail-value">${b.email||'—'}</div></div>
+      <div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value">${b.phone||'—'}</div></div>
+      <div class="detail-item"><div class="detail-label">Address</div><div class="detail-value">${b.address||'—'}</div></div>
+      <div class="detail-item"><div class="detail-label">Joined</div><div class="detail-value">${b.created_at ? new Date(b.created_at).toLocaleDateString("en-IN") : '—'}</div></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn btn-amber" onclick="closeModal('buyerDetailModal');showToast('⚠️ Buyer suspended','amber')">⏸ Suspend</button>
+      <button class="btn btn-red" onclick="closeModal('buyerDetailModal');showToast('🚫 Buyer blocked','error')">🚫 Block</button>
+      <button class="btn btn-blue" style="margin-left:auto" onclick="closeModal('buyerDetailModal')">Close</button>
+    </div>`;
+  openModal("buyerDetailModal");
+}
+
+async function addBuyer() {
+  const name=document.getElementById("ab_name").value.trim();
+  const phone=document.getElementById("ab_phone").value.trim();
+  const email=document.getElementById("ab_email").value.trim();
+  const pass=document.getElementById("ab_pass").value.trim();
+  const address=document.getElementById("ab_address").value.trim();
+  const msgEl=document.getElementById("addBuyerMsg");
+
+  if (!name||!phone||!email||!pass) { showInlineMsg(msgEl,"Please fill all required fields","error"); return; }
+  const res = await apiPost("/api/buyer/register", { name,email,phone,password:pass,address });
+  if (res && res.success) {
+    showInlineMsg(msgEl,"✅ Buyer added successfully!","success");
+    showToast("Buyer added ✅","success");
+    loadBuyers();
+  } else {
+    showInlineMsg(msgEl, res?.message || "Failed to add buyer","error");
+  }
+}
+
+function blockUser(type, id, name) {
+  if (confirm(`Block ${name}? They will not be able to login.`)) {
+    showToast(`🚫 ${name} has been blocked`,"error");
+  }
+}
+
+// ===== PRODUCTS =====
+async function loadProducts() {
+  const data = await apiFetch("/admin-products");
+  products = data || [];
+  renderProducts(products);
+}
+
+function renderProducts(data) {
+  const tb = document.getElementById("productsTable");
+  if (!data.length) { tb.innerHTML = `<tr><td colspan="7" class="table-empty">No products found</td></tr>`; return; }
+  tb.innerHTML = data.map(p => {
+    const badgeCls = p.status==="Approved"?"badge-green":p.status==="Rejected"?"badge-red":p.status==="Hidden"?"badge-gray":"badge-amber";
+    return `<tr>
+      <td style="font-weight:600;font-size:13px">${p.name}</td>
+      <td style="font-size:12px;color:var(--text2)">ID: ${p.farmer_id||'—'}</td>
+      <td><span class="badge badge-blue">${p.category||'—'}</span></td>
+      <td style="font-weight:600">₹${p.price||0}</td>
+      <td>${p.quantity||0} kg</td>
+      <td><span class="badge ${badgeCls}">${p.status}</span></td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        ${p.status!=="Approved"?`<button class="btn btn-green btn-sm" onclick="changeProductStatus(${p.product_id},'Approved')">✓ Approve</button>`:""}
+        ${p.status!=="Rejected"?`<button class="btn btn-red btn-sm" onclick="changeProductStatus(${p.product_id},'Rejected')">✗ Reject</button>`:""}
+        ${p.status!=="Hidden"?`<button class="btn btn-ghost btn-sm" onclick="changeProductStatus(${p.product_id},'Hidden')">👁 Hide</button>`:""}
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function filterProducts(val) {
+  val = (val || document.getElementById("productSearch").value || "").toLowerCase();
+  const status = document.getElementById("productStatusFilter").value;
+  const cat    = document.getElementById("productCatFilter").value;
+  renderProducts(products.filter(p =>
+    (!val || p.name?.toLowerCase().includes(val)) &&
+    (!status || p.status === status) &&
+    (!cat || p.category === cat)
+  ));
+}
+
+async function changeProductStatus(id, status) {
+  try {
+    await fetch(API + `/admin-product-status/${id}`, {
+      method:"PUT", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({ status })
+    });
+  } catch {}
+  products = products.map(p => p.product_id===id ? {...p,status} : p);
+  renderProducts(products);
+  showToast(`Product ${status} ✅`,"success");
+  document.getElementById("pendingBadge").innerText = products.filter(p=>p.status==="Pending").length;
+}
+
+function approveProduct(id) { changeProductStatus(id,"Approved"); }
+function rejectProduct(id)  { changeProductStatus(id,"Rejected"); }
+
+// ===== ORDERS =====
+async function loadOrders() {
+  const data = await apiFetch("/admin-orders");
+  orders = data || generateDemoOrders();
+  renderOrdersAdmin(orders);
+}
+
+function generateDemoOrders() {
+  const statuses = ["Placed","Delivered","Cancelled","Refunded"];
+  const methods  = ["UPI","Card","COD"];
+  return Array.from({length:15},(_,i)=>({
+    order_id:`ORD${String(i+1).padStart(3,"0")}`,
+    buyer_id: i%10+1,
+    total_amount: Math.round((Math.random()*5000+500)),
+    status: statuses[i%4],
+    created_at: new Date(2026,2,i+1).toLocaleDateString("en-IN"),
+    method: methods[i%3]
+  }));
+}
+
+function renderOrdersAdmin(data) {
+  const tb = document.getElementById("ordersTable");
+  if (!data.length) { tb.innerHTML = `<tr><td colspan="7" class="table-empty">No orders found</td></tr>`; return; }
+  tb.innerHTML = data.map(o => {
+    const badgeCls = o.status==="Delivered"?"badge-green":o.status==="Placed"?"badge-amber":o.status==="Cancelled"?"badge-red":"badge-purple";
+    return `<tr>
+      <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px">#${o.order_id}</td>
+      <td style="font-size:12px">Buyer ${o.buyer_id}</td>
+      <td style="font-weight:700">₹${Number(o.total_amount||0).toLocaleString("en-IN")}</td>
+      <td><span class="badge ${badgeCls}">${o.status}</span></td>
+      <td style="font-size:12px;color:var(--text2)">${o.created_at ? new Date(o.created_at).toLocaleDateString("en-IN") : '—'}</td>
+      <td><span class="badge badge-gray">${o.method||'UPI'}</span></td>
+      <td style="display:flex;gap:4px">
+        ${o.status==="Placed"?`<button class="btn btn-green btn-sm" onclick="updateOrder('${o.order_id}','Delivered')">✓ Deliver</button>`:""}
+        ${o.status==="Placed"?`<button class="btn btn-red btn-sm" onclick="updateOrder('${o.order_id}','Cancelled')">✗ Cancel</button>`:""}
+        ${o.status==="Delivered"?`<span style="font-size:11px;color:var(--green2)">✓ Complete</span>`:""}
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function filterOrdersAdmin() {
+  const status = document.getElementById("orderStatusFilter").value;
+  renderOrdersAdmin(status ? orders.filter(o=>o.status===status) : orders);
+}
+
+function updateOrder(id, status) {
+  orders = orders.map(o => String(o.order_id)===String(id) ? {...o,status} : o);
+  renderOrdersAdmin(orders);
+  showToast(`Order ${status} ✅`,"success");
+}
+
+// ===== PAYMENTS =====
+async function loadPayments() {
+  const data = await apiFetch("/admin-stats");
+  const total = data?.revenue || 125000;
+  const issued = 8500;
+  document.getElementById("payCollected").innerText = "₹" + Number(total).toLocaleString("en-IN");
+  document.getElementById("payIssued").innerText    = "₹" + issued.toLocaleString("en-IN");
+  document.getElementById("payNet").innerText       = "₹" + (total - issued).toLocaleString("en-IN");
+
+  const tb = document.getElementById("paymentsTable");
+  const demoPayments = Array.from({length:10},(_,i)=>({
+    id:`TXN${String(i+1).padStart(4,"0")}`,
+    buyer:`Buyer${i+1}`, amount: Math.round(Math.random()*5000+300),
+    method:["UPI","Card","COD"][i%3], status:"Success",
+    date: new Date(2026,2,i+1).toLocaleDateString("en-IN")
+  }));
+  tb.innerHTML = demoPayments.map(p=>`<tr>
+    <td style="font-family:'Syne',sans-serif;font-size:12px">${p.id}</td>
+    <td>${p.buyer}</td>
+    <td style="font-weight:700">₹${p.amount.toLocaleString("en-IN")}</td>
+    <td><span class="badge badge-gray">${p.method}</span></td>
+    <td><span class="badge badge-green">${p.status}</span></td>
+    <td style="font-size:12px;color:var(--text2)">${p.date}</td>
+  </tr>`).join("");
+}
+
+// ===== REFUNDS =====
+function loadRefunds() {
+  const tb = document.getElementById("refundsTable");
+  document.getElementById("refundBadge").innerText = refunds.filter(r=>r.status==="Pending").length;
+  if (!refunds.length) { tb.innerHTML=`<tr><td colspan="7" class="table-empty">No refund requests</td></tr>`; return; }
+  tb.innerHTML = refunds.map((r,i) => {
+    const badgeCls = r.status==="Approved"?"badge-green":r.status==="Rejected"?"badge-red":"badge-amber";
+    return `<tr>
+      <td style="font-family:'Syne',sans-serif;font-weight:700;font-size:12px">#${r.id}</td>
+      <td>${r.buyer}</td>
+      <td style="font-size:12px">${r.order}</td>
+      <td style="font-weight:700">₹${r.amount}</td>
+      <td style="font-size:12px;color:var(--text2)">${r.reason}</td>
+      <td><span class="badge ${badgeCls}">${r.status}</span></td>
+      <td style="display:flex;gap:4px">
+        ${r.status==="Pending"?`
+          <button class="btn btn-green btn-sm" onclick="processRefund(${i},'Approved')">✓ Approve</button>
+          <button class="btn btn-red btn-sm" onclick="processRefund(${i},'Rejected')">✗ Reject</button>`
+        :`<span style="font-size:12px;color:var(--text2)">${r.status}</span>`}
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function processRefund(idx, status) {
+  refunds[idx].status = status;
+  localStorage.setItem("fc_admin_refunds", JSON.stringify(refunds));
+  loadRefunds();
+  showToast(`Refund ${status} ✅`, status==="Approved"?"success":"error");
+}
+
+// ===== REPORTS =====
+function loadReports() {
+  const metrics = [
+    { label:"Total Revenue", val:"₹1,75,000", color:"var(--green2)" },
+    { label:"Total Orders", val:"1,450", color:"var(--blue2)" },
+    { label:"Active Farmers", val:"45", color:"var(--amber2)" },
+    { label:"Active Buyers", val:"89", color:"var(--cyan2)" },
+    { label:"Avg Order Value", val:"₹1,207", color:"var(--purple2)" },
+    { label:"Refund Rate", val:"4.8%", color:"var(--red2)" }
+  ];
+  document.getElementById("reportMetrics").innerHTML = metrics.map(m=>`
+    <div class="report-metric">
+      <div class="lbl">${m.label}</div>
+      <div class="val" style="color:${m.color}">${m.val}</div>
+    </div>`).join("");
+
+  // Revenue chart
+  const rCtx = document.getElementById("reportRevenueChart");
+  if (window._rpChart) window._rpChart.destroy();
+  window._rpChart = new Chart(rCtx, {
+    type:"bar",
+    data:{ labels:["Oct","Nov","Dec","Jan","Feb","Mar"],
+      datasets:[{ label:"Revenue", data:[85000,120000,98000,145000,132000,175000],
+        backgroundColor:"rgba(31,111,235,.3)", borderColor:"#388bfd", borderWidth:2, borderRadius:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, grid:{ color:"rgba(255,255,255,.05)" }, ticks:{ color:"#8b949e" } },
+               x:{ grid:{ display:false }, ticks:{ color:"#8b949e" } } } }
+  });
+
+  // Category chart
+  const cCtx = document.getElementById("reportCatChart");
+  if (window._rcChart) window._rcChart.destroy();
+  window._rcChart = new Chart(cCtx, {
+    type:"doughnut",
+    data:{ labels:["Grains","Vegetables","Fruits","Dairy","Spices"],
+      datasets:[{ data:[35,25,20,12,8],
+        backgroundColor:["#2ea043","#1f6feb","#d29922","#6e40c9","#da3633"],
+        borderWidth:0, hoverOffset:8 }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:"60%",
+      plugins:{ legend:{ position:"bottom", labels:{ color:"#8b949e", padding:14, font:{ size:11 } } } } }
+  });
+
+  // Top farmers
+  document.getElementById("topFarmers").innerHTML = [
+    {name:"Ramesh Kumar",revenue:"₹28,500",orders:12},
+    {name:"Suresh Patil",revenue:"₹22,000",orders:9},
+    {name:"Amit Singh",revenue:"₹18,750",orders:7},
+    {name:"Mahesh Yadav",revenue:"₹15,200",orders:6},
+    {name:"Ravi Verma",revenue:"₹12,800",orders:5}
+  ].map((f,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text2);width:24px">${i+1}</div>
+      <div style="flex:1"><div style="font-weight:600;font-size:13px">${f.name}</div>
+        <div style="font-size:11px;color:var(--text2)">${f.orders} orders</div></div>
+      <div style="font-weight:700;color:var(--green2)">${f.revenue}</div>
+    </div>`).join("");
+
+  document.getElementById("topProducts").innerHTML = [
+    {name:"Basmati Rice",orders:85,cat:"Grains"},
+    {name:"Wheat",orders:72,cat:"Grains"},
+    {name:"Tomato",orders:54,cat:"Vegetables"},
+    {name:"Onion",orders:48,cat:"Vegetables"},
+    {name:"Alphonso Mango",orders:36,cat:"Fruits"}
+  ].map((p,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text2);width:24px">${i+1}</div>
+      <div style="flex:1"><div style="font-weight:600;font-size:13px">${p.name}</div>
+        <div style="font-size:11px;color:var(--text2)">${p.cat}</div></div>
+      <div style="font-weight:700;color:var(--blue2)">${p.orders} orders</div>
+    </div>`).join("");
+}
+
+function exportCSV() {
+  let csv = "Order ID,Buyer,Amount,Status,Date\n";
+  orders.forEach(o => { csv += `${o.order_id},Buyer${o.buyer_id},${o.total_amount},${o.status},${o.created_at}\n`; });
+  const blob = new Blob([csv],{type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "farmconnect_report.csv";
+  a.click();
+  showToast("📊 Report exported","success");
+}
+
+// ===== ANNOUNCEMENTS =====
+function loadAnnouncements() {
+  const list = document.getElementById("annList");
+  if (!announcements.length) {
+    list.innerHTML = `<div style="color:var(--text2);text-align:center;padding:20px">No announcements yet.</div>`;
+    return;
+  }
+  list.innerHTML = announcements.map((a,i) => `
+    <div style="padding:14px;background:var(--bg3);border-radius:var(--r2);margin-bottom:10px;border-left:3px solid var(--blue2)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-weight:700;font-size:14px">${a.title}</div>
+          <div style="font-size:12px;color:var(--text2);margin-top:2px">${a.target} · ${a.date}</div>
+        </div>
+        <button class="btn btn-red btn-sm" onclick="deleteAnnouncement(${i})">🗑</button>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-top:8px">${a.message}</div>
+    </div>`).join("");
+}
+
+function publishAnnouncement() {
+  const title   = document.getElementById("annTitle").value.trim();
+  const message = document.getElementById("annMsg").value.trim();
+  const target  = document.getElementById("annTarget").value;
+  const msgEl   = document.getElementById("annMsg2");
+
+  if (!title || !message) {
+    msgEl.style.display="block"; msgEl.style.background="var(--red3)";
+    msgEl.style.color="var(--red2)"; msgEl.style.borderColor="var(--red)";
+    msgEl.innerText="Please fill title and message."; return;
+  }
+
+  const ann = { title, message, target, date: new Date().toLocaleDateString("en-IN") };
+  announcements.unshift(ann);
+  localStorage.setItem("fc_announcements", JSON.stringify(announcements));
+  localStorage.setItem("announcement", message); // for farmer dashboard
+
+  document.getElementById("annTitle").value = "";
+  document.getElementById("annMsg").value   = "";
+  msgEl.style.display="block";
+  msgEl.style.background="var(--green3)";
+  msgEl.style.color="var(--green2)";
+  msgEl.style.borderColor="var(--green)";
+  msgEl.innerText="✅ Announcement published!";
+  setTimeout(()=>msgEl.style.display="none",3000);
+  loadAnnouncements();
+  showToast("📢 Announcement published","success");
+}
+
+function deleteAnnouncement(i) {
+  announcements.splice(i,1);
+  localStorage.setItem("fc_announcements",JSON.stringify(announcements));
+  loadAnnouncements();
+  showToast("🗑 Announcement deleted");
+}
+
+// ===== SETTINGS =====
+function saveAdminProfile() {
+  const curr = document.getElementById("setCurrPass").value;
+  const np   = document.getElementById("setNewPass").value;
+  const cp   = document.getElementById("setConfPass").value;
+  if (curr !== "admin123") { showToast("❌ Current password incorrect","error"); return; }
+  if (np && np !== cp)     { showToast("❌ Passwords do not match","error"); return; }
+  showToast("✅ Profile updated","success");
+}
+
+function savePlatformSettings() {
+  platformSettings = {
+    fee:    document.getElementById("setPlatformFee").value,
+    minOrder: document.getElementById("setMinOrder").value,
+    refundDays: document.getElementById("setRefundDays").value
+  };
+  localStorage.setItem("fc_settings",JSON.stringify(platformSettings));
+  showToast("✅ Settings saved","success");
+}
+
+// ===== GLOBAL SEARCH =====
+function globalSearch(val) {
+  if (!val.trim()) return;
+  // Simple: highlight in current view
+  showToast(`🔍 Searching for "${val}"...`);
+}
+
+// ===== MODAL HELPERS =====
+function openModal(id)  { document.getElementById(id).classList.add("open"); }
+function closeModal(id) { document.getElementById(id).classList.remove("open"); }
+document.querySelectorAll(".modal-overlay").forEach(m => {
+  m.addEventListener("click", e => { if(e.target===m) m.classList.remove("open"); });
+});
+
+// ===== INLINE MSG =====
+function showInlineMsg(el, text, type) {
+  el.style.display="block";
+  el.style.background = type==="success"?"var(--green3)":"var(--red3)";
+  el.style.color      = type==="success"?"var(--green2)":"var(--red2)";
+  el.style.border     = `1px solid ${type==="success"?"var(--green)":"var(--red)"}`;
+  el.style.borderRadius = "8px"; el.style.padding="10px";
+  el.innerText = text;
+}
+
+// ===== TOAST =====
+function showToast(msg, type="") {
+  const t = document.getElementById("toast");
+  t.innerText = msg;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.className = "toast", 3000);
+}
+
+// ===== LOGOUT =====
+function logout() {
+  if (confirm("Logout from admin panel?")) window.location.href = "admin-login.html";
+}
+
+// ===== INIT =====
+loadDashboard();
+</script>
+</body>
+</html>

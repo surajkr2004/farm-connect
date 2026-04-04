@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Healthcare - FarmConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="topbar">
+    <button onclick="goBack()">⬅ Back</button>
+    <h3>🌾 FarmConnect</h3>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<h2>🏥 Healthcare Services</h2>
+
+<div class="container">
+    <select id="doctor">
+        <option>Select Doctor</option>
+        <option>General Physician</option>
+        <option>Eye Specialist</option>
+        <option>Orthopedic</option>
+    </select>
+
+    <input type="date" id="date">
+    <button onclick="book()">Book Appointment</button>
+
+    <p id="healthMsg"></p>
+</div>
+
+<script>
+function book() {
+    const doctor = document.getElementById("doctor").value;
+    const date = document.getElementById("date").value;
+
+    if (doctor === "Select Doctor") {
+        alert("Please select a doctor");
+        return;
+    }
+    if (!date) {
+        alert("Please select a date");
+        return;
+    }
+
+    document.getElementById("healthMsg").innerText =
+        "✅ Appointment Booked with " + doctor + " on " + date;
+}
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>

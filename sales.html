@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Sales - FarmConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="topbar">
+    <button onclick="goBack()">⬅ Back</button>
+    <h3>🌾 FarmConnect</h3>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<h2>📊 My Sales</h2>
+
+<div class="container">
+    <p id="salesData"></p>
+</div>
+
+<script>
+const data = JSON.parse(localStorage.getItem("produce"));
+
+if (data) {
+    document.getElementById("salesData").innerHTML =
+        `Crop: ${data.crop}<br>
+         Quantity: ${data.qty} kg<br>
+         Price: ₹${data.price}`;
+} else {
+    document.getElementById("salesData").innerText =
+        "No sales data available.";
+}
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>

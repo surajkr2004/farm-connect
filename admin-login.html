@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Login - FarmConnect</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --dark: #0f172a;
+  --dark2: #1e293b;
+  --accent: #22c55e;
+  --accent2: #15803d;
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --border: #334155;
+  --error: #f87171;
+  --shadow: 0 25px 60px rgba(0,0,0,0.5);
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  background-image:
+    radial-gradient(ellipse at 30% 60%, rgba(34,197,94,0.05) 0%, transparent 55%),
+    radial-gradient(ellipse at 70% 10%, rgba(21,128,61,0.08) 0%, transparent 45%);
+}
+
+.card {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  animation: rise 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(30px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.brand { text-align: center; margin-bottom: 32px; }
+.brand-icon { font-size: 40px; display: block; margin-bottom: 8px; }
+.brand h1 { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--accent); }
+.brand p { color: var(--muted); font-size: 13px; margin-top: 4px; font-weight: 300; letter-spacing: 0.05em; text-transform: uppercase; }
+
+.form-group { margin-bottom: 18px; }
+
+label { display: block; font-size: 12px; font-weight: 500; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.04em; text-transform: uppercase; }
+
+input {
+  width: 100%; padding: 13px 16px;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text);
+  background: var(--dark); transition: all 0.2s; outline: none;
+}
+
+input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(34,197,94,0.1); }
+input::placeholder { color: #475569; }
+
+.btn {
+  width: 100%; padding: 13px; border: none; border-radius: 12px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  color: white; margin-top: 8px;
+}
+
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(34,197,94,0.3); }
+
+.forgot-link {
+  display: block; text-align: right; font-size: 13px;
+  color: var(--accent); font-weight: 500; cursor: pointer; margin-top: 6px;
+}
+.forgot-link:hover { text-decoration: underline; }
+
+.back-link { text-align: center; margin-top: 20px; font-size: 13px; color: var(--muted); }
+.back-link a { color: var(--accent); font-weight: 500; text-decoration: none; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.65); backdrop-filter: blur(6px);
+  display: none; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal-overlay.show { display: flex; }
+
+.modal {
+  background: var(--surface); border-radius: 24px; padding: 40px 36px;
+  width: 100%; max-width: 400px; border: 1px solid var(--border);
+  animation: rise 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+}
+
+.modal-step { display: none; }
+.modal-step.active { display: block; }
+
+.modal h2 { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--accent); margin-bottom: 6px; }
+.modal p { color: var(--muted); font-size: 13px; margin-bottom: 22px; line-height: 1.6; }
+
+.step-indicator { display: flex; gap: 6px; margin-bottom: 24px; }
+.step-dot { height: 4px; border-radius: 2px; flex: 1; background: var(--border); transition: background 0.3s; }
+.step-dot.done { background: var(--accent); }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.btn-ghost {
+  background: var(--dark); color: var(--muted);
+  border: 1.5px solid var(--border); flex: 1;
+}
+.btn-ghost:hover { background: var(--dark2); color: var(--text); }
+
+.msg { font-size: 13px; padding: 10px 14px; border-radius: 8px; margin-top: 12px; display: none; }
+.msg.error { background: rgba(248,113,113,0.1); color: var(--error); border: 1px solid rgba(248,113,113,0.3); display: block; }
+.msg.success { background: rgba(34,197,94,0.1); color: var(--accent); border: 1px solid rgba(34,197,94,0.3); display: block; }
+
+.success-icon { text-align: center; font-size: 52px; margin-bottom: 16px; }
+
+.security-note {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: rgba(34,197,94,0.07); border: 1px solid rgba(34,197,94,0.15);
+  border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 12px;
+  color: var(--muted); line-height: 1.5;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="brand">
+    <span class="brand-icon">🧑‍💼</span>
+    <h1>FarmConnect</h1>
+    <p>Admin Control Panel</p>
+  </div>
+
+  <div class="form-group">
+    <label>Admin Username</label>
+    <input id="adminUser" placeholder="Enter username">
+  </div>
+
+  <div class="form-group">
+    <label>Password</label>
+    <input id="adminPass" type="password" placeholder="Enter password">
+    <span class="forgot-link" onclick="openModal()">Forgot Password?</span>
+  </div>
+
+  <button class="btn btn-primary" onclick="adminLogin()">Login</button>
+
+  <div class="back-link">
+    <a href="index.html">← Back to User Login</a>
+  </div>
+</div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+<div class="modal">
+
+  <div class="step-indicator">
+    <div class="step-dot done" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="modal-step active" id="step1">
+    <h2>🔐 Admin Recovery</h2>
+    <p>Enter your admin username to begin the password recovery process.</p>
+    <div class="security-note">
+      🛡️ Admin recovery is protected by a security question. Make sure you set one up during initial configuration.
+    </div>
+    <div class="form-group">
+      <label>Admin Username</label>
+      <input id="resetUser" placeholder="Enter admin username">
+    </div>
+    <div id="msg1" class="msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="step1Next()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="modal-step" id="step2">
+    <h2>🛡️ Security Check</h2>
+    <p>Answer the security question linked to your admin account.</p>
+    <div class="form-group">
+      <label id="questionLabel">Security Question</label>
+      <input id="secAnswer" placeholder="Your answer">
+    </div>
+    <div id="msg2" class="msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" style="flex:1" onclick="step2Next()">Verify →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="modal-step" id="step3">
+    <h2>🔑 New Password</h2>
+    <p>Set a new secure password for your admin account.</p>
+    <div class="form-group">
+      <label>New Password</label>
+      <input id="newPass" type="password" placeholder="Minimum 8 characters">
+    </div>
+    <div class="form-group">
+      <label>Confirm Password</label>
+      <input id="confirmPass" type="password" placeholder="Re-enter new password">
+    </div>
+    <div id="msg3" class="msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" style="flex:1" onclick="step3Next()">Reset →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Success -->
+  <div class="modal-step" id="step4">
+    <div class="success-icon">✅</div>
+    <h2>Password Reset!</h2>
+    <p>Your admin password has been updated. Please log in with your new password.</p>
+    <button class="btn btn-primary" style="margin-top:10px" onclick="closeModal()">Back to Login</button>
+  </div>
+
+</div>
+</div>
+
+<script>
+/* Admin accounts stored in localStorage key "admins_security"
+   Default fallback: username "admin", password "admin123"
+   with a security question.
+*/
+function getAdmins() {
+  return JSON.parse(localStorage.getItem("admins_security")) || [
+    {
+      username: "admin",
+      password: "admin123",
+      question: "What is the name of your first school?",
+      answer: "dav"
+    }
+  ];
+}
+function saveAdmins(data) { localStorage.setItem("admins_security", JSON.stringify(data)); }
+
+function adminLogin() {
+  const user = document.getElementById("adminUser").value.trim();
+  const pass = document.getElementById("adminPass").value.trim();
+
+  const admins = getAdmins();
+  const found = admins.find(a => a.username === user && a.password === pass);
+
+  if (found) {
+    alert("Welcome Admin!");
+    window.location.href = "admin-dashboard.html";
+  } else {
+    alert("Invalid Admin Credentials");
+  }
+}
+
+let foundUser = null;
+
+function openModal() {
+  document.getElementById("modalOverlay").classList.add("show");
+  goStep(1);
+}
+
+function closeModal() {
+  document.getElementById("modalOverlay").classList.remove("show");
+  foundUser = null;
+  clearMsg();
+}
+
+function goStep(n) {
+  document.querySelectorAll(".modal-step").forEach((s, i) => s.classList.toggle("active", i === n - 1));
+  document.querySelectorAll(".step-dot").forEach((d, i) => d.classList.toggle("done", i < n));
+  clearMsg();
+}
+
+function showMsg(id, text, type) { const el = document.getElementById(id); el.textContent = text; el.className = "msg " + type; }
+function clearMsg() { ["msg1","msg2","msg3"].forEach(id => { const el = document.getElementById(id); if(el){el.className="msg";el.textContent="";} }); }
+
+function step1Next() {
+  const val = document.getElementById("resetUser").value.trim();
+  if (!val) { showMsg("msg1", "Please enter your admin username.", "error"); return; }
+
+  const admins = getAdmins();
+  const user = admins.find(a => a.username === val);
+  if (!user) { showMsg("msg1", "No admin account found with that username.", "error"); return; }
+
+  foundUser = user;
+  document.getElementById("questionLabel").textContent = user.question;
+  document.getElementById("secAnswer").value = "";
+  goStep(2);
+}
+
+function step2Next() {
+  const answer = document.getElementById("secAnswer").value.trim().toLowerCase();
+  if (!answer) { showMsg("msg2", "Please enter your answer.", "error"); return; }
+  if (answer !== foundUser.answer.toLowerCase()) { showMsg("msg2", "Incorrect answer. Please try again.", "error"); return; }
+  goStep(3);
+}
+
+function step3Next() {
+  const np = document.getElementById("newPass").value;
+  const cp = document.getElementById("confirmPass").value;
+  if (np.length < 8) { showMsg("msg3", "Admin password must be at least 8 characters.", "error"); return; }
+  if (np !== cp) { showMsg("msg3", "Passwords do not match.", "error"); return; }
+
+  const admins = getAdmins();
+  const idx = admins.findIndex(a => a.username === foundUser.username);
+  if (idx !== -1) { admins[idx].password = np; saveAdmins(admins); }
+  goStep(4);
+}
+
+document.getElementById("modalOverlay").addEventListener("click", function(e) { if (e.target === this) closeModal(); });
+</script>
+</body>
+</html>

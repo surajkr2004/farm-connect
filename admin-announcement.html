@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Announcements</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h2>📢 Announcement</h2>
+
+<div class="container">
+    <textarea id="msg" placeholder="Enter announcement"></textarea>
+    <button onclick="save()">Publish</button>
+</div>
+
+<script>
+function save() {
+    localStorage.setItem("announcement",
+        document.getElementById("msg").value);
+    alert("Announcement Published");
+}
+</script>
+
+</body>
+</html>

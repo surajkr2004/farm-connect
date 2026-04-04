@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Order Details</title>
+<style>
+body{margin:0;font-family:Arial;background:#f1f5f9}
+.header{
+  background:#0f172a;color:white;
+  padding:20px;display:flex;
+  justify-content:space-between;align-items:center
+}
+.badge{padding:6px 14px;border-radius:20px}
+.pending{background:#facc15;color:black}
+.delivered{background:#22c55e}
+.cancelled{background:#ef4444}
+button{padding:8px 14px;border:none;border-radius:8px;margin-left:6px;cursor:pointer}
+.container{padding:30px;max-width:1100px;margin:auto}
+.card{
+  background:white;padding:20px;
+  border-radius:14px;margin-bottom:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08)
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div>
+    <h2>Order <span id="oid"></span></h2>
+    <p>Status: <span id="status" class="badge"></span></p>
+  </div>
+  <div>
+    <button onclick="setStatus('Delivered')">Mark Delivered</button>
+    <button onclick="setStatus('Cancelled')">Cancel Order</button>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="card">
+<h3>Order Summary</h3>
+<p><b>Buyer:</b> <span id="buyer"></span></p>
+<p><b>Farmer:</b> <span id="farmer"></span></p>
+<p><b>Product:</b> <span id="product"></span></p>
+<p><b>Quantity:</b> <span id="qty"></span></p>
+<p><b>Total Value:</b> ₹<span id="total"></span></p>
+</div>
+
+<div class="card">
+<h3>Order Timeline</h3>
+<p>Placed: <span id="placed"></span></p>
+<p>Packed: <span id="packed"></span></p>
+<p>Delivered: <span id="delivered"></span></p>
+</div>
+
+<div class="card">
+<h3>Refund Info</h3>
+<p id="refundInfo"></p>
+</div>
+
+<div class="card">
+<h3>Fraud Control</h3>
+<button onclick="toggleFraud()">Toggle Fraud Flag</button>
+<p>Status: <b id="fraud"></b></p>
+</div>
+
+</div>
+
+<script src="data.js"></script>
+
+<script>
+const DBLS = JSON.parse(localStorage.getItem("DB"));
+const oid = new URLSearchParams(location.search).get("oid");
+const order = DBLS.orders.find(o=>o.id===oid);
+
+/* BASIC */
+document.getElementById("oid").innerText = order.id;
+document.getElementById("buyer").innerText =
+  order.buyerName + " (" + order.buyerId + ")";
+document.getElementById("farmer").innerText =
+  order.farmerName + " (" + order.farmerId + ")";
+document.getElementById("product").innerText =
+  order.productName + " (" + order.productId + ")";
+document.getElementById("qty").innerText = order.quantity;
+document.getElementById("total").innerText = order.total;
+
+/* STATUS */
+const st = document.getElementById("status");
+st.innerText = order.status;
+st.className = "badge " + order.status.toLowerCase();
+
+/* TIMELINE */
+document.getElementById("placed").innerText = order.timeline.placed;
+document.getElementById("packed").innerText = order.timeline.packed || "—";
+document.getElementById("delivered").innerText =
+  order.timeline.delivered || "—";
+
+/* REFUND */
+document.getElementById("refundInfo").innerText =
+  order.refundId ? "Refund ID: " + order.refundId : "No refund";
+
+/* FRAUD */
+document.getElementById("fraud").innerText = order.fraud ? "Flagged" : "Clear";
+
+function setStatus(s){
+  order.status = s;
+  if(s==="Delivered"){
+    order.timeline.delivered = new Date().toISOString().split("T")[0];
+  }
+  save();
+}
+
+function toggleFraud(){
+  order.fraud = !order.fraud;
+  save();
+}
+
+function save(){
+  localStorage.setItem("DB", JSON.stringify(DBLS));
+  location.reload();
+}
+</script>
+
+</body>
+</html>

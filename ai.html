@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Crop Prediction - FarmConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="topbar">
+    <button onclick="goBack()">⬅ Back</button>
+    <h3>🌾 FarmConnect</h3>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<h2>🤖 AI Crop Price Prediction</h2>
+
+<div class="container">
+    <select id="crop">
+        <option>Wheat</option>
+        <option>Rice</option>
+        <option>Maize</option>
+    </select>
+
+    <button onclick="predictPrice()">Predict</button>
+    <p id="result"></p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

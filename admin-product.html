@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Product Profile</title>
+<style>
+body{margin:0;font-family:Arial;background:#f1f5f9}
+.header{
+  background:#0f172a;color:white;
+  padding:20px;display:flex;
+  justify-content:space-between;align-items:center
+}
+.badge{padding:6px 14px;border-radius:20px}
+.pending{background:#facc15;color:black}
+.live{background:#22c55e}
+.rejected{background:#ef4444}
+.hidden{background:#64748b}
+button{padding:8px 14px;border:none;border-radius:8px;margin-left:6px;cursor:pointer}
+.container{padding:30px;max-width:1100px;margin:auto}
+.card{
+  background:white;padding:20px;
+  border-radius:14px;margin-bottom:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08)
+}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #eee}
+th{background:#2563eb;color:white}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div>
+    <h2 id="name"></h2>
+    <p>Product ID: <b id="pid"></b></p>
+    <p>Status: <span id="status" class="badge"></span></p>
+  </div>
+  <div>
+    <button onclick="setStatus('Live')">Approve</button>
+    <button onclick="setStatus('Rejected')">Reject</button>
+    <button onclick="setStatus('Hidden')">Hide</button>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="card">
+<h3>Product Profile</h3>
+<p><b>Farmer:</b> <span id="farmer"></span></p>
+<p><b>Quality Score:</b> ⭐ <span id="quality"></span></p>
+<p><b>Current Price:</b> ₹<span id="price"></span></p>
+<p><b>Orders Count:</b> <span id="orders"></span></p>
+</div>
+
+<div class="card">
+<h3>Price History</h3>
+<table>
+<tr><th>Price</th><th>Date</th></tr>
+<tbody id="priceHistory"></tbody>
+</table>
+</div>
+
+<div class="card">
+<h3>Refunds</h3>
+<table>
+<tr><th>Refund ID</th><th>Order ID</th><th>Amount</th></tr>
+<tbody id="refunds"></tbody>
+</table>
+</div>
+
+</div>
+
+<script src="data.js"></script>
+
+<script>
+const DBLS = JSON.parse(localStorage.getItem("DB"));
+const pid = new URLSearchParams(location.search).get("pid");
+const product = DBLS.products.find(p=>p.id===pid);
+
+/* BASIC */
+document.getElementById("pid").innerText = product.id;
+document.getElementById("name").innerText = product.name;
+document.getElementById("quality").innerText = product.quality;
+document.getElementById("price").innerText = product.price;
+document.getElementById("orders").innerText = product.orders.length;
+document.getElementById("farmer").innerText =
+  product.farmerName + " (" + product.farmerId + ")";
+
+/* STATUS */
+const st = document.getElementById("status");
+st.innerText = product.status;
+st.className = "badge " + product.status.toLowerCase();
+
+/* PRICE HISTORY */
+document.getElementById("priceHistory").innerHTML =
+product.priceHistory.map(p=>`
+<tr><td>₹${p.price}</td><td>${p.date}</td></tr>
+`).join("");
+
+/* REFUNDS */
+document.getElementById("refunds").innerHTML =
+product.refunds.map(r=>`
+<tr>
+  <td>${r.refundId}</td>
+  <td>${r.orderId}</td>
+  <td>₹${r.amount}</td>
+</tr>
+`).join("");
+
+function setStatus(s){
+  product.status = s;
+  save();
+}
+
+function save(){
+  localStorage.setItem("DB", JSON.stringify(DBLS));
+  location.reload();
+}
+</script>
+
+</body>
+</html>

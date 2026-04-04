@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FarmConnect - Farmer Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Epilogue:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root{
+  --green:#1a6b3c;--green2:#25a55a;--green3:#e8f8ee;--green4:#d1f0de;
+  --amber:#d97706;--amber2:#fffbeb;--amber3:#fef3c7;
+  --blue:#2563eb;--blue2:#eff6ff;
+  --red:#ef4444;--red2:#fef2f2;
+  --dark:#0d1117;--dark2:#161b22;
+  --gray:#6b7280;--gray2:#f9fafb;--gray3:#e5e7eb;--gray4:#d1d5db;
+  --white:#fff;
+  --shadow:0 2px 16px rgba(0,0,0,.07);
+  --shadow2:0 8px 40px rgba(0,0,0,.13);
+  --r:16px;--r2:12px;--r3:8px
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Epilogue',sans-serif;background:#f0f2f5;color:var(--dark);min-height:100vh}
+
+/* ===== TOPBAR ===== */
+.topbar{
+  position:sticky;top:0;z-index:200;
+  background:var(--dark);color:#fff;
+  padding:0 20px;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 20px rgba(0,0,0,.3)
+}
+.topbar-logo{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff}
+.topbar-logo span{color:var(--green2)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.farmer-chip{
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.1);
+  padding:6px 14px;border-radius:20px;font-size:13px
+}
+.logout-btn{
+  background:rgba(255,255,255,.1);border:none;color:#fff;
+  padding:7px 14px;border-radius:8px;font-family:'Epilogue',sans-serif;
+  font-size:13px;cursor:pointer;transition:background .2s
+}
+.logout-btn:hover{background:rgba(255,255,255,.2)}
+
+/* ===== BOTTOM NAV ===== */
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--white);border-top:1px solid var(--gray3);
+  display:flex;z-index:150;
+  box-shadow:0 -4px 20px rgba(0,0,0,.08)
+}
+.bnav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:8px 4px;gap:2px;border:none;background:transparent;
+  cursor:pointer;color:var(--gray);font-family:'Epilogue',sans-serif;
+  font-size:10px;font-weight:500;transition:color .2s
+}
+.bnav-item.active{color:var(--green)}
+.bnav-item.active .bnav-icon{
+  background:var(--green3);border-radius:12px;
+}
+.bnav-icon{font-size:20px;padding:4px 12px;transition:background .2s}
+body{padding-bottom:70px}
+
+/* ===== PAGES ===== */
+.page{display:none;padding:20px;max-width:900px;margin:0 auto}
+.page.active{display:block}
+
+/* ===== SECTION TITLE ===== */
+.sec-title{
+  font-family:'Syne',sans-serif;font-size:20px;font-weight:700;
+  margin-bottom:18px;display:flex;align-items:center;gap:10px
+}
+
+/* ===== STAT CARDS ===== */
+.stats-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:14px;margin-bottom:24px
+}
+.stat-card{
+  background:var(--white);border-radius:var(--r);
+  padding:18px 16px;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:6px;
+  border-left:4px solid transparent;transition:transform .2s
+}
+.stat-card:hover{transform:translateY(-3px)}
+.stat-card.green{border-left-color:var(--green2)}
+.stat-card.amber{border-left-color:var(--amber)}
+.stat-card.blue{border-left-color:var(--blue)}
+.stat-card.red{border-left-color:var(--red)}
+.stat-icon{font-size:24px}
+.stat-label{font-size:12px;color:var(--gray);font-weight:500}
+.stat-value{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+.stat-sub{font-size:11px;color:var(--gray)}
+
+/* ===== CARDS ===== */
+.card{
+  background:var(--white);border-radius:var(--r);
+  padding:20px;box-shadow:var(--shadow);margin-bottom:16px
+}
+.card-title{font-weight:600;font-size:15px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+/* ===== FORMS ===== */
+.form-group{margin-bottom:14px}
+.form-group label{
+  display:block;font-size:12px;font-weight:600;
+  color:var(--gray);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px
+}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;padding:11px 14px;
+  border:1.5px solid var(--gray3);border-radius:10px;
+  font-family:'Epilogue',sans-serif;font-size:14px;
+  color:var(--dark);background:var(--gray2);
+  outline:none;transition:all .2s
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  border-color:var(--green);background:#fff;
+  box-shadow:0 0 0 3px rgba(26,107,60,.08)
+}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn{
+  padding:12px 24px;border:none;border-radius:10px;
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px
+}
+.btn-green{background:var(--green);color:#fff}
+.btn-green:hover{background:#155c32;transform:translateY(-1px)}
+.btn-full{width:100%;justify-content:center}
+.btn-amber{background:var(--amber);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-ghost{background:var(--gray3);color:var(--dark)}
+
+/* ===== PRODUCT CARDS ===== */
+.product-list{display:flex;flex-direction:column;gap:10px}
+.product-item{
+  background:var(--gray2);border-radius:var(--r2);
+  padding:14px 16px;display:flex;align-items:center;gap:14px
+}
+.product-emoji{
+  width:48px;height:48px;background:var(--green3);
+  border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px
+}
+.product-info{flex:1}
+.product-name{font-weight:600;font-size:14px}
+.product-meta{font-size:12px;color:var(--gray);margin-top:2px}
+.status-badge{
+  padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700
+}
+.badge-pending{background:var(--amber3);color:var(--amber)}
+.badge-approved{background:var(--green3);color:var(--green)}
+.badge-rejected{background:var(--red2);color:var(--red)}
+
+/* ===== ORDERS TABLE ===== */
+.order-item{
+  background:var(--gray2);border-radius:var(--r2);
+  padding:14px 16px;margin-bottom:10px;
+  border-left:4px solid var(--green2)
+}
+.order-item.pending{border-left-color:var(--amber)}
+.order-item.refund{border-left-color:var(--red)}
+.order-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.order-id{font-family:'Syne',sans-serif;font-weight:700;font-size:14px}
+.order-meta{font-size:12px;color:var(--gray)}
+.order-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.order-amount{font-weight:700;font-size:15px}
+
+/* ===== PAYMENT SUMMARY ===== */
+.pay-row{
+  display:flex;justify-content:space-between;
+  padding:10px 0;border-bottom:1px solid var(--gray3);font-size:14px
+}
+.pay-row:last-child{border-bottom:none}
+.pay-row.total{font-family:'Syne',sans-serif;font-weight:700;font-size:16px}
+.pay-row .positive{color:var(--green);font-weight:600}
+.pay-row .negative{color:var(--red);font-weight:600}
+
+/* ===== AI PREDICTION ===== */
+.predict-result{
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  color:#fff;border-radius:var(--r);padding:24px;text-align:center;
+  margin-top:16px;display:none
+}
+.predict-result .price{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;margin:8px 0}
+.predict-result .trend{font-size:14px;opacity:.9}
+
+/* ===== HEALTH CARDS ===== */
+.health-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.health-card{
+  background:var(--white);border-radius:var(--r);padding:18px;
+  box-shadow:var(--shadow);text-align:center;cursor:pointer;
+  transition:all .2s;border:2px solid transparent
+}
+.health-card:hover{border-color:var(--green);transform:translateY(-3px)}
+.health-icon{font-size:36px;margin-bottom:8px}
+.health-name{font-weight:600;font-size:14px}
+.health-sub{font-size:12px;color:var(--gray);margin-top:3px}
+
+/* ===== SCHEME CARDS ===== */
+.scheme-card{
+  background:var(--white);border-radius:var(--r);
+  padding:18px;box-shadow:var(--shadow);margin-bottom:12px;
+  border-left:4px solid var(--blue)
+}
+.scheme-name{font-weight:700;font-size:15px;margin-bottom:4px}
+.scheme-desc{font-size:13px;color:var(--gray);margin-bottom:10px}
+.scheme-benefit{
+  background:var(--blue2);color:var(--blue);
+  padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;
+  display:inline-block
+}
+
+/* ===== ANNOUNCEMENT BANNER ===== */
+.announce-banner{
+  background:linear-gradient(135deg,var(--amber),#f59e0b);
+  color:#fff;border-radius:var(--r);padding:16px 20px;
+  margin-bottom:20px;display:flex;align-items:center;gap:12px
+}
+.announce-text{font-size:14px;font-weight:500}
+
+/* ===== CHART ===== */
+.chart-wrap{position:relative;height:220px;margin-top:10px}
+
+/* ===== TOAST ===== */
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--dark);color:#fff;padding:12px 24px;border-radius:24px;
+  font-size:14px;z-index:500;opacity:0;transition:all .3s;
+  pointer-events:none;white-space:nowrap
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ===== MSG ===== */
+.msg{font-size:13px;padding:10px 14px;border-radius:8px;margin-top:10px;display:none}
+.msg.success{background:var(--green3);color:var(--green);border:1px solid var(--green4);display:block}
+.msg.error{background:var(--red2);color:var(--red);border:1px solid #fecaca;display:block}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">Farm<span>Connect</span></div>
+  <div class="topbar-right">
+    <div class="farmer-chip">👨‍🌾 <span id="farmerNameTop">Farmer</span></div>
+    <button class="logout-btn" onclick="logout()">🚪 Logout</button>
+  </div>
+</div>
+
+<!-- ===== PAGE: HOME / DASHBOARD ===== -->
+<div class="page active" id="pageHome">
+
+  <div class="announce-banner" id="announceBanner" style="display:none">
+    <span style="font-size:22px">📢</span>
+    <div class="announce-text" id="announceText"></div>
+  </div>
+
+  <div class="sec-title">📊 Dashboard</div>
+
+  <div class="stats-grid">
+    <div class="stat-card green">
+      <div class="stat-icon">🌾</div>
+      <div class="stat-label">My Products</div>
+      <div class="stat-value" id="statProducts">0</div>
+      <div class="stat-sub">Listed items</div>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-icon">📦</div>
+      <div class="stat-label">Orders</div>
+      <div class="stat-value" id="statOrders">0</div>
+      <div class="stat-sub">Total received</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">💰</div>
+      <div class="stat-label">Earnings</div>
+      <div class="stat-value" id="statEarnings">₹0</div>
+      <div class="stat-sub">This month</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-icon">🔄</div>
+      <div class="stat-label">Refunds</div>
+      <div class="stat-value" id="statRefunds">0</div>
+      <div class="stat-sub">Pending</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📈 Sales Overview (Last 6 Months)</div>
+    <div class="chart-wrap">
+      <canvas id="salesChart"></canvas>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🌾 My Products</div>
+    <div class="product-list" id="dashProductList">
+      <div style="color:var(--gray);text-align:center;padding:20px">No products yet. Upload your first produce!</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== PAGE: UPLOAD PRODUCE ===== -->
+<div class="page" id="pageUpload">
+  <div class="sec-title">🌾 Upload Produce</div>
+
+  <div class="card">
+    <div class="card-title">Add New Product</div>
+
+    <div class="form-group">
+      <label>Crop Name</label>
+      <input id="cropName" placeholder="e.g. Basmati Rice, Alphonso Mango">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category</label>
+        <select id="cropCat">
+          <option value="">Select Category</option>
+          <option>Grains</option>
+          <option>Vegetables</option>
+          <option>Fruits</option>
+          <option>Dairy</option>
+          <option>Spices</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Quantity (kg)</label>
+        <input id="cropQty" type="number" min="1" placeholder="e.g. 500">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Price per kg (₹)</label>
+        <input id="cropPrice" type="number" min="1" placeholder="e.g. 45">
+      </div>
+      <div class="form-group">
+        <label>Harvest Date</label>
+        <input id="cropDate" type="date">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Description (optional)</label>
+      <textarea id="cropDesc" rows="2" placeholder="Quality, grade, special features..."></textarea>
+    </div>
+    <div id="uploadMsg" class="msg"></div>
+    <button class="btn btn-green btn-full" onclick="uploadProduce()">📤 Submit for Approval</button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 My Uploaded Products</div>
+    <div class="product-list" id="uploadProductList">
+      <div style="color:var(--gray);text-align:center;padding:20px">No products uploaded yet.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: ORDERS ===== -->
+<div class="page" id="pageOrders">
+  <div class="sec-title">📦 My Orders</div>
+
+  <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+    <button class="btn btn-ghost" onclick="filterOrders('all',this)" id="oAll" style="background:var(--green);color:#fff">All</button>
+    <button class="btn btn-ghost" onclick="filterOrders('Placed',this)">Placed</button>
+    <button class="btn btn-ghost" onclick="filterOrders('Delivered',this)">Delivered</button>
+    <button class="btn btn-ghost" onclick="filterOrders('Refund',this)">Refunds</button>
+  </div>
+
+  <div id="ordersList">
+    <div style="color:var(--gray);text-align:center;padding:40px">No orders yet.</div>
+  </div>
+</div>
+
+<!-- ===== PAGE: PAYMENTS ===== -->
+<div class="page" id="pagePayments">
+  <div class="sec-title">💳 Payments</div>
+
+  <div class="card">
+    <div class="card-title">💰 Payment Summary</div>
+    <div class="pay-row">
+      <span>Total Sales</span>
+      <span class="positive" id="payTotalSales">₹0</span>
+    </div>
+    <div class="pay-row">
+      <span>Refunds Issued</span>
+      <span class="negative" id="payRefunds">₹0</span>
+    </div>
+    <div class="pay-row">
+      <span>Platform Fee (2%)</span>
+      <span class="negative" id="payFee">₹0</span>
+    </div>
+    <div class="pay-row total">
+      <span>Net Earnings</span>
+      <span class="positive" id="payNet">₹0</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💳 Payment Methods Accepted</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--gray2);border-radius:10px">
+        <span style="font-size:24px">📱</span>
+        <div><div style="font-weight:600;font-size:14px">UPI</div><div style="font-size:12px;color:var(--gray)">GPay, PhonePe, Paytm, BHIM</div></div>
+        <span style="margin-left:auto;color:var(--green);font-weight:600;font-size:12px">✓ Active</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--gray2);border-radius:10px">
+        <span style="font-size:24px">💳</span>
+        <div><div style="font-weight:600;font-size:14px">Bank Transfer (NEFT/IMPS)</div><div style="font-size:12px;color:var(--gray)">Direct to your bank account</div></div>
+        <span style="margin-left:auto;color:var(--green);font-weight:600;font-size:12px">✓ Active</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 Monthly Earnings</div>
+    <div class="chart-wrap">
+      <canvas id="payChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE: MORE (Health, Schemes, AI) ===== -->
+<div class="page" id="pageMore">
+  <div class="sec-title">⚙️ More Features</div>
+
+  <!-- AI PREDICTION -->
+  <div class="card">
+    <div class="card-title">🤖 AI Crop Price Prediction</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Select Crop</label>
+        <select id="aiCrop">
+          <option>Wheat</option><option>Rice</option><option>Maize</option>
+          <option>Tomato</option><option>Potato</option><option>Onion</option>
+          <option>Sugarcane</option><option>Cotton</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Your State</label>
+        <select id="aiState">
+          <option>Punjab</option><option>UP</option><option>Bihar</option>
+          <option>MP</option><option>Maharashtra</option><option>Gujarat</option>
+          <option>Rajasthan</option><option>Haryana</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-green btn-full" onclick="predictPrice()">🔮 Predict Price</button>
+    <div class="predict-result" id="predictResult">
+      <div style="font-size:14px;opacity:.8">Predicted Market Price</div>
+      <div class="price" id="predictPrice">₹0</div>
+      <div class="trend" id="predictTrend"></div>
+    </div>
+  </div>
+
+  <!-- HEALTHCARE -->
+  <div class="card">
+    <div class="card-title">🏥 Healthcare Services</div>
+    <div class="health-grid" style="margin-bottom:14px">
+      <div class="health-card" onclick="selectDoctor('General Physician')">
+        <div class="health-icon">👨‍⚕️</div>
+        <div class="health-name">General Physician</div>
+        <div class="health-sub">Common illness & checkup</div>
+      </div>
+      <div class="health-card" onclick="selectDoctor('Eye Specialist')">
+        <div class="health-icon">👁️</div>
+        <div class="health-name">Eye Specialist</div>
+        <div class="health-sub">Vision & eye care</div>
+      </div>
+      <div class="health-card" onclick="selectDoctor('Orthopedic')">
+        <div class="health-icon">🦴</div>
+        <div class="health-name">Orthopedic</div>
+        <div class="health-sub">Bones & joint pain</div>
+      </div>
+      <div class="health-card" onclick="selectDoctor('Skin Doctor')">
+        <div class="health-icon">🩺</div>
+        <div class="health-name">Skin Doctor</div>
+        <div class="health-sub">Dermatology & skin care</div>
+      </div>
+    </div>
+    <div id="healthBooking" style="display:none">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Selected Doctor</label>
+          <input id="selectedDoc" readonly style="background:#fff">
+        </div>
+        <div class="form-group">
+          <label>Appointment Date</label>
+          <input id="apptDate" type="date">
+        </div>
+      </div>
+      <div id="healthMsg" class="msg"></div>
+      <button class="btn btn-blue btn-full" onclick="bookAppointment()">📅 Book Appointment</button>
+    </div>
+  </div>
+
+  <!-- GOVT SCHEMES -->
+  <div class="card">
+    <div class="card-title">🏛️ Government Schemes</div>
+    <div class="form-row" style="margin-bottom:10px">
+      <div class="form-group">
+        <label>Land Area (Acres)</label>
+        <input id="landAcres" type="number" min="0" step="0.1" placeholder="e.g. 2.5">
+      </div>
+      <div class="form-group">
+        <label>Annual Income (₹)</label>
+        <input id="annualIncome" type="number" placeholder="e.g. 150000">
+      </div>
+    </div>
+    <button class="btn btn-green btn-full" onclick="checkSchemes()" style="margin-bottom:16px">Check Eligibility</button>
+    <div id="schemesList" style="display:none"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="bnav-item active" onclick="showPage('Home',this)">
+    <span class="bnav-icon">📊</span>Dashboard
+  </button>
+  <button class="bnav-item" onclick="showPage('Upload',this)">
+    <span class="bnav-icon">🌾</span>Upload
+  </button>
+  <button class="bnav-item" onclick="showPage('Orders',this)">
+    <span class="bnav-icon">📦</span>Orders
+  </button>
+  <button class="bnav-item" onclick="showPage('Payments',this)">
+    <span class="bnav-icon">💳</span>Payments
+  </button>
+  <button class="bnav-item" onclick="showPage('More',this)">
+    <span class="bnav-icon">⚙️</span>More
+  </button>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API        = "http://localhost:5000";
+const farmerId   = localStorage.getItem("farmerId");
+const farmerName = localStorage.getItem("farmerName") || "Farmer";
+
+if (!farmerId) window.location.href = "farmer-login.html";
+
+document.getElementById("farmerNameTop").innerText = farmerName.split(" ")[0];
+
+// ===== STATE =====
+let myProducts = JSON.parse(localStorage.getItem("fc_farmer_products")) || [];
+let myOrders   = JSON.parse(localStorage.getItem("fc_farmer_orders"))   || [
+  { id:"#ORD001", buyer:"Buyer1", product:"Wheat",   qty:50,  amount:2250, status:"Delivered", date:"2026-03-10" },
+  { id:"#ORD002", buyer:"Buyer3", product:"Rice",    qty:30,  amount:3600, status:"Placed",    date:"2026-03-18" },
+  { id:"#ORD003", buyer:"Buyer7", product:"Tomato",  qty:20,  amount:900,  status:"Refund",    date:"2026-03-20" }
+];
+
+const EMOJIS = { Grains:"🌾", Vegetables:"🥦", Fruits:"🍎", Dairy:"🥛", Spices:"🌶", default:"🌿" };
+
+// ===== PAGE NAV =====
+function showPage(name, btn) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById("page" + name).classList.add("active");
+  document.querySelectorAll(".bnav-item").forEach(b => b.classList.remove("active"));
+  if (btn) btn.classList.add("active");
+
+  if (name === "Home")     renderDashboard();
+  if (name === "Upload")   renderUploadList();
+  if (name === "Orders")   renderOrders("all");
+  if (name === "Payments") renderPayments();
+}
+
+// ===== DASHBOARD =====
+function renderDashboard() {
+  // Stats
+  const totalEarnings = myOrders
+    .filter(o => o.status === "Delivered")
+    .reduce((s, o) => s + o.amount, 0);
+  const refunds = myOrders.filter(o => o.status === "Refund").length;
+
+  document.getElementById("statProducts").innerText = myProducts.length;
+  document.getElementById("statOrders").innerText   = myOrders.length;
+  document.getElementById("statEarnings").innerText = "₹" + totalEarnings.toLocaleString("en-IN");
+  document.getElementById("statRefunds").innerText  = refunds;
+
+  // Announcement
+  const ann = localStorage.getItem("announcement");
+  if (ann) {
+    document.getElementById("announceBanner").style.display = "flex";
+    document.getElementById("announceText").innerText = ann;
+  }
+
+  // Product list
+  const list = document.getElementById("dashProductList");
+  if (!myProducts.length) {
+    list.innerHTML = `<div style="color:var(--gray);text-align:center;padding:20px">No products yet. Go to Upload tab!</div>`;
+  } else {
+    list.innerHTML = myProducts.slice(0, 5).map(p => productItemHTML(p)).join("");
+  }
+
+  // Chart
+  drawSalesChart();
+}
+
+function productItemHTML(p) {
+  const emoji = EMOJIS[p.category] || EMOJIS.default;
+  const badgeClass = p.status === "Approved" ? "badge-approved"
+                   : p.status === "Rejected" ? "badge-rejected" : "badge-pending";
+  return `
+  <div class="product-item">
+    <div class="product-emoji">${emoji}</div>
+    <div class="product-info">
+      <div class="product-name">${p.name}</div>
+      <div class="product-meta">${p.category} · ${p.qty}kg · ₹${p.price}/kg</div>
+    </div>
+    <span class="status-badge ${badgeClass}">${p.status}</span>
+  </div>`;
+}
+
+function drawSalesChart() {
+  const ctx = document.getElementById("salesChart");
+  if (!ctx) return;
+  if (window._salesChart) window._salesChart.destroy();
+  window._salesChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Oct","Nov","Dec","Jan","Feb","Mar"],
+      datasets: [{
+        label: "Earnings (₹)",
+        data: [12000, 18500, 15000, 22000, 19500, 25000],
+        backgroundColor: "rgba(26,107,60,0.15)",
+        borderColor: "#1a6b3c",
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: "#f0f0f0" } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ===== UPLOAD PRODUCE =====
+async function uploadProduce() {
+  const name     = document.getElementById("cropName").value.trim();
+  const category = document.getElementById("cropCat").value;
+  const qty      = document.getElementById("cropQty").value;
+  const price    = document.getElementById("cropPrice").value;
+  const desc     = document.getElementById("cropDesc").value;
+  const msgEl    = document.getElementById("uploadMsg");
+
+  if (!name || !category || !qty || !price) {
+    showMsg(msgEl, "Please fill all required fields.", "error"); return;
+  }
+
+  const product = {
+    id: "P" + Date.now(), name, category,
+    qty: Number(qty), price: Number(price),
+    description: desc, status: "Pending",
+    farmerId, farmerName,
+    date: new Date().toLocaleDateString("en-IN")
+  };
+
+  // Try server
+  try {
+    const res  = await fetch(API + "/api/products/upload", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ farmer_id: farmerId, name, quantity: qty, price, category })
+    });
+    const data = await res.json();
+    if (data.success) product.status = "Pending";
+  } catch { /* offline - save locally */ }
+
+  myProducts.unshift(product);
+  localStorage.setItem("fc_farmer_products", JSON.stringify(myProducts));
+
+  showMsg(msgEl, "✅ Produce submitted for admin approval!", "success");
+  document.getElementById("cropName").value  = "";
+  document.getElementById("cropQty").value   = "";
+  document.getElementById("cropPrice").value = "";
+  document.getElementById("cropDesc").value  = "";
+  document.getElementById("cropCat").value   = "";
+  renderUploadList();
+  showToast("Product submitted for approval 🌾");
+}
+
+function renderUploadList() {
+  const list = document.getElementById("uploadProductList");
+  if (!myProducts.length) {
+    list.innerHTML = `<div style="color:var(--gray);text-align:center;padding:20px">No products uploaded yet.</div>`;
+    return;
+  }
+  list.innerHTML = myProducts.map(p => productItemHTML(p)).join("");
+}
+
+// ===== ORDERS =====
+function renderOrders(filter) {
+  const box = document.getElementById("ordersList");
+  const orders = filter === "all" ? myOrders
+    : myOrders.filter(o => o.status === filter);
+
+  if (!orders.length) {
+    box.innerHTML = `<div style="color:var(--gray);text-align:center;padding:40px">No orders found.</div>`;
+    return;
+  }
+
+  box.innerHTML = orders.map(o => {
+    const cls = o.status === "Refund" ? "refund" : o.status === "Placed" ? "pending" : "";
+    const badgeCls = o.status === "Delivered" ? "badge-approved"
+                   : o.status === "Refund"    ? "badge-rejected" : "badge-pending";
+    return `
+    <div class="order-item ${cls}">
+      <div class="order-top">
+        <div class="order-id">${o.id}</div>
+        <span class="status-badge ${badgeCls}">${o.status}</span>
+      </div>
+      <div class="order-meta">
+        👤 ${o.buyer} · 🌾 ${o.product} · 📦 ${o.qty}kg · 📅 ${o.date}
+      </div>
+      <div class="order-bottom">
+        <div class="order-amount">₹${o.amount.toLocaleString("en-IN")}</div>
+        ${o.status === "Refund"
+          ? `<span style="font-size:12px;color:var(--red);font-weight:600">⚠️ Refund Requested</span>`
+          : o.status === "Placed"
+          ? `<button class="btn btn-green" style="padding:6px 14px;font-size:12px" onclick="markDelivered('${o.id}')">Mark Delivered</button>`
+          : `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Completed</span>`
+        }
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function filterOrders(filter, btn) {
+  document.querySelectorAll(".page .btn-ghost,.page .btn-green").forEach(b => {
+    b.style.background = ""; b.style.color = "";
+  });
+  if (btn) { btn.style.background = "var(--green)"; btn.style.color = "#fff"; }
+  renderOrders(filter);
+}
+
+function markDelivered(id) {
+  const idx = myOrders.findIndex(o => o.id === id);
+  if (idx !== -1) {
+    myOrders[idx].status = "Delivered";
+    localStorage.setItem("fc_farmer_orders", JSON.stringify(myOrders));
+    renderOrders("all");
+    showToast("Order marked as delivered ✅");
+  }
+}
+
+// ===== PAYMENTS =====
+function renderPayments() {
+  const totalSales = myOrders.filter(o => o.status === "Delivered").reduce((s, o) => s + o.amount, 0);
+  const refundAmt  = myOrders.filter(o => o.status === "Refund").reduce((s, o) => s + o.amount, 0);
+  const fee        = Math.round(totalSales * 0.02);
+  const net        = totalSales - refundAmt - fee;
+
+  document.getElementById("payTotalSales").innerText = "₹" + totalSales.toLocaleString("en-IN");
+  document.getElementById("payRefunds").innerText    = "₹" + refundAmt.toLocaleString("en-IN");
+  document.getElementById("payFee").innerText        = "₹" + fee.toLocaleString("en-IN");
+  document.getElementById("payNet").innerText        = "₹" + net.toLocaleString("en-IN");
+
+  // Payment chart
+  const ctx = document.getElementById("payChart");
+  if (window._payChart) window._payChart.destroy();
+  window._payChart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: ["Oct","Nov","Dec","Jan","Feb","Mar"],
+      datasets: [{
+        label: "Net Earnings",
+        data: [11000, 17000, 14000, 20000, 18000, net || 23000],
+        borderColor: "#1a6b3c",
+        backgroundColor: "rgba(26,107,60,0.08)",
+        borderWidth: 2.5,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: "#1a6b3c"
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: "#f0f0f0" } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+}
+
+// ===== AI PREDICTION =====
+function predictPrice() {
+  const crop  = document.getElementById("aiCrop").value;
+  const state = document.getElementById("aiState").value;
+
+  const base = {
+    Wheat:50, Rice:70, Maize:38, Tomato:45,
+    Potato:28, Onion:35, Sugarcane:32, Cotton:120
+  };
+
+  const stateMultiplier = {
+    Punjab:1.05, UP:0.98, Bihar:0.95, MP:1.0,
+    Maharashtra:1.08, Gujarat:1.06, Rajasthan:1.02, Haryana:1.04
+  };
+
+  const basePrice = base[crop] || 50;
+  const mult      = stateMultiplier[state] || 1;
+  const predicted = Math.round(basePrice * mult);
+  const trend     = predicted > basePrice
+    ? "📈 Prices trending UP — Good time to sell!"
+    : "📉 Prices stable — Consider storing for better rates";
+
+  document.getElementById("predictPrice").innerText = "₹" + predicted + "/kg";
+  document.getElementById("predictTrend").innerText = trend;
+  document.getElementById("predictResult").style.display = "block";
+  showToast("Price predicted for " + crop + " 🤖");
+}
+
+// ===== HEALTHCARE =====
+function selectDoctor(name) {
+  document.getElementById("selectedDoc").value = name;
+  document.getElementById("healthBooking").style.display = "block";
+  document.querySelectorAll(".health-card").forEach(c => c.style.borderColor = "transparent");
+  showToast("Selected: " + name);
+}
+
+function bookAppointment() {
+  const doc  = document.getElementById("selectedDoc").value;
+  const date = document.getElementById("apptDate").value;
+  const msg  = document.getElementById("healthMsg");
+  if (!date) { showMsg(msg, "Please select an appointment date.", "error"); return; }
+  showMsg(msg, `✅ Appointment booked with ${doc} on ${new Date(date).toLocaleDateString("en-IN")}`, "success");
+  showToast("Appointment confirmed 📅");
+}
+
+// ===== GOVT SCHEMES =====
+function checkSchemes() {
+  const land   = parseFloat(document.getElementById("landAcres").value) || 0;
+  const income = parseFloat(document.getElementById("annualIncome").value) || 0;
+  const box    = document.getElementById("schemesList");
+
+  const schemes = [
+    {
+      name: "PM-KISAN",
+      desc: "Direct income support of ₹6,000/year in 3 instalments to small & marginal farmers.",
+      benefit: "₹6,000/year",
+      eligible: land >= 0.5
+    },
+    {
+      name: "Pradhan Mantri Fasal Bima Yojana",
+      desc: "Crop insurance scheme providing financial support to farmers if crop fails.",
+      benefit: "Up to ₹2,00,000 coverage",
+      eligible: land > 0
+    },
+    {
+      name: "Kisan Credit Card (KCC)",
+      desc: "Credit facility for purchase of seeds, fertilizers, pesticides and other farm needs.",
+      benefit: "Up to ₹3 Lakh credit",
+      eligible: land >= 1
+    },
+    {
+      name: "PM Kisan Sampada Yojana",
+      desc: "Scheme for agro-processing clusters and food processing infrastructure.",
+      benefit: "Subsidy up to 35%",
+      eligible: income < 500000
+    },
+    {
+      name: "Soil Health Card Scheme",
+      desc: "Free soil testing and card with crop-wise recommendations.",
+      benefit: "Free Testing",
+      eligible: true
+    }
+  ];
+
+  const eligible = schemes.filter(s => s.eligible);
+  box.style.display = "block";
+  box.innerHTML = eligible.map(s => `
+    <div class="scheme-card">
+      <div class="scheme-name">🏛️ ${s.name}</div>
+      <div class="scheme-desc">${s.desc}</div>
+      <span class="scheme-benefit">✓ ${s.benefit}</span>
+    </div>
+  `).join("");
+  showToast(`${eligible.length} schemes found for you!`);
+}
+
+// ===== HELPERS =====
+function showMsg(el, text, type) {
+  el.innerText = text; el.className = "msg " + type;
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.innerText = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+function logout() {
+  localStorage.removeItem("farmerId");
+  localStorage.removeItem("farmerName");
+  localStorage.removeItem("farmerPhone");
+  window.location.href = "farmer-login.html";
+}
+
+// ===== INIT =====
+renderDashboard();
+</script>
+</body>
+</html>

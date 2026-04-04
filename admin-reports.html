@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin | Reports & Analytics</title>
+<style>
+body{margin:0;font-family:Arial;background:#f1f5f9}
+h1{margin:20px}
+.container{padding:20px;max-width:1200px;margin:auto}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;
+}
+.card{
+  background:white;
+  padding:20px;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08)
+}
+.card h3{margin:0;color:#64748b}
+.card h2{margin:10px 0 0;color:#0f172a}
+
+.section{
+  background:white;
+  margin-top:30px;
+  padding:20px;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08)
+}
+
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th,td{padding:12px;border-bottom:1px solid #eee;text-align:left}
+th{background:#2563eb;color:white}
+
+button{
+  padding:10px 16px;
+  border:none;
+  background:#2563eb;
+  color:white;
+  border-radius:10px;
+  cursor:pointer;
+  margin-top:10px
+}
+</style>
+</head>
+
+<body>
+
+<h1>Reports & Analytics</h1>
+
+<div class="container">
+
+<!-- SUMMARY -->
+<div class="cards">
+  <div class="card"><h3>Total Revenue</h3><h2>₹<span id="revenue">0</span></h2></div>
+  <div class="card"><h3>Total Orders</h3><h2 id="orders">0</h2></div>
+  <div class="card"><h3>Active Farmers</h3><h2 id="farmers">0</h2></div>
+  <div class="card"><h3>Active Buyers</h3><h2 id="buyers">0</h2></div>
+  <div class="card"><h3>Total Refunds</h3><h2>₹<span id="refunds">0</span></h2></div>
+</div>
+
+<!-- TOP FARMERS -->
+<div class="section">
+<h2>Top Farmers (by Revenue)</h2>
+<table id="topFarmers">
+<tr><th>Farmer</th><th>Total Revenue</th></tr>
+</table>
+</div>
+
+<!-- TOP PRODUCTS -->
+<div class="section">
+<h2>Top Products (by Orders)</h2>
+<table id="topProducts">
+<tr><th>Product</th><th>Orders</th></tr>
+</table>
+</div>
+
+<!-- MONTHLY -->
+<div class="section">
+<h2>Monthly Orders & Revenue</h2>
+<table id="monthly">
+<tr><th>Month</th><th>Orders</th><th>Revenue</th></tr>
+</table>
+</div>
+
+<button onclick="downloadCSV()">⬇ Download Full Report (CSV)</button>
+
+</div>
+
+<script src="data.js"></script>
+
+<script>
+const DBLS = JSON.parse(localStorage.getItem("DB"));
+
+/* ===== TOTALS ===== */
+let totalRevenue = 0;
+let totalRefund = 0;
+
+DBLS.orders.forEach(o=>{
+  if(o.status === "Delivered"){
+    totalRevenue += o.total;
+  }
+});
+
+DBLS.buyers.forEach(b=>{
+  b.refunds.forEach(r=>{
+    if(r.status==="Approved") totalRefund += r.amount;
+  });
+});
+
+document.getElementById("revenue").innerText = totalRevenue;
+document.getElementById("refunds").innerText = totalRefund;
+document.getElementById("orders").innerText = DBLS.orders.length;
+document.getElementById("farmers").innerText =
+  DBLS.farmers.filter(f=>f.status==="Active").length;
+document.getElementById("buyers").innerText =
+  DBLS.buyers.filter(b=>b.status==="Active").length;
+
+/* ===== TOP FARMERS ===== */
+const farmerRevenue = {};
+DBLS.orders.forEach(o=>{
+  if(o.status==="Delivered"){
+    farmerRevenue[o.farmerName] =
+      (farmerRevenue[o.farmerName] || 0) + o.total;
+  }
+});
+
+Object.entries(farmerRevenue)
+.sort((a,b)=>b[1]-a[1])
+.slice(0,5)
+.forEach(f=>{
+  document.getElementById("topFarmers").innerHTML +=
+    `<tr><td>${f[0]}</td><td>₹${f[1]}</td></tr>`;
+});
+
+/* ===== TOP PRODUCTS ===== */
+const productOrders = {};
+DBLS.orders.forEach(o=>{
+  productOrders[o.productName] =
+    (productOrders[o.productName] || 0) + 1;
+});
+
+Object.entries(productOrders)
+.sort((a,b)=>b[1]-a[1])
+.slice(0,5)
+.forEach(p=>{
+  document.getElementById("topProducts").innerHTML +=
+    `<tr><td>${p[0]}</td><td>${p[1]}</td></tr>`;
+});
+
+/* ===== MONTHLY ===== */
+const monthly = {};
+DBLS.orders.forEach(o=>{
+  const m = o.timeline.placed.slice(0,7);
+  if(!monthly[m]) monthly[m] = {orders:0,revenue:0};
+  monthly[m].orders++;
+  if(o.status==="Delivered") monthly[m].revenue += o.total;
+});
+
+Object.entries(monthly).forEach(m=>{
+  document.getElementById("monthly").innerHTML +=
+    `<tr><td>${m[0]}</td><td>${m[1].orders}</td><td>₹${m[1].revenue}</td></tr>`;
+});
+
+/* ===== CSV EXPORT ===== */
+function downloadCSV(){
+  let csv = "OrderID,Buyer,Farmer,Product,Total,Status\n";
+  DBLS.orders.forEach(o=>{
+    csv += `${o.id},${o.buyerName},${o.farmerName},${o.productName},${o.total},${o.status}\n`;
+  });
+
+  const blob = new Blob([csv],{type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "farmconnect_report.csv";
+  a.click();
+}
+</script>
+
+</body>
+</html>

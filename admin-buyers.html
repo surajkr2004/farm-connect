@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin | Buyers</title>
+<style>
+body{margin:0;font-family:Arial;background:#f1f5f9}
+h1{margin:20px}
+table{width:95%;margin:20px auto;border-collapse:collapse;background:#fff}
+th,td{padding:12px;border-bottom:1px solid #eee;text-align:left}
+th{background:#2563eb;color:white}
+.badge{padding:5px 10px;border-radius:20px;font-size:12px}
+.active{background:#22c55e;color:#052e16}
+.blocked{background:#ef4444;color:#450a0a}
+.suspended{background:#facc15;color:#422006}
+button{padding:6px 10px;border:none;border-radius:6px;cursor:pointer}
+</style>
+</head>
+
+<body>
+
+<h1>Buyers Management</h1>
+
+<table id="buyersTable">
+<tr>
+  <th>Buyer ID</th>
+  <th>Name</th>
+  <th>Status</th>
+  <th>Orders</th>
+  <th>Total Spend</th>
+  <th>Refund Requests</th>
+  <th>Action</th>
+</tr>
+</table>
+
+<script src="data.js"></script>
+
+<script>
+const DBLS = JSON.parse(localStorage.getItem("DB"));
+
+const table = document.getElementById("buyersTable");
+
+DBLS.buyers.forEach(b=>{
+  const pendingRefunds = b.refunds.filter(r=>r.status==="Pending").length;
+
+  table.innerHTML += `
+  <tr>
+    <td>${b.id}</td>
+    <td>${b.name}</td>
+    <td><span class="badge ${b.status.toLowerCase()}">${b.status}</span></td>
+    <td>${b.orders.length}</td>
+    <td>₹${b.totalSpend}</td>
+    <td>${pendingRefunds}</td>
+    <td>
+      <button onclick="openBuyer('${b.id}')">View</button>
+    </td>
+  </tr>`;
+});
+
+function openBuyer(bid){
+  window.location.href = "admin-buyer.html?bid=" + bid;
+}
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Farmer Login - FarmConnect</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --green:#15803d;--green-light:#22c55e;--green-dark:#14532d;
+  --bg:#f0fdf4;--surface:#fff;--text:#0f172a;--muted:#64748b;
+  --border:#e2e8f0;--error:#ef4444;--shadow:0 20px 60px rgba(21,128,61,.12)
+}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);font-family:'DM Sans',sans-serif;
+  background-image:radial-gradient(ellipse at 80% 50%,rgba(34,197,94,.08) 0%,transparent 60%),
+  radial-gradient(ellipse at 20% 20%,rgba(21,128,61,.06) 0%,transparent 50%)}
+.card{background:var(--surface);border-radius:24px;padding:48px 40px;width:100%;
+  max-width:420px;box-shadow:var(--shadow);border:1px solid rgba(34,197,94,.1);
+  animation:rise .5s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(30px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.brand{text-align:center;margin-bottom:32px}
+.brand-icon{font-size:40px;display:block;margin-bottom:8px}
+.brand h1{font-family:'Playfair Display',serif;font-size:28px;color:var(--green-dark)}
+.brand p{color:var(--muted);font-size:14px;margin-top:4px;font-weight:300}
+.form-group{margin-bottom:18px}
+label{display:block;font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+input,select{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:12px;
+  font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);
+  background:#fafafa;transition:all .2s;outline:none}
+input:focus{border-color:var(--green);background:#fff;box-shadow:0 0 0 3px rgba(21,128,61,.08)}
+.btn{width:100%;padding:13px;border:none;border-radius:12px;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,var(--green),var(--green-light));color:white;margin-top:8px}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(21,128,61,.3)}
+.btn-primary:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.forgot-link{display:block;text-align:right;font-size:13px;color:var(--green);
+  font-weight:500;cursor:pointer;margin-top:6px}
+.forgot-link:hover{text-decoration:underline}
+.back-link{text-align:center;margin-top:20px;font-size:13px;color:var(--muted)}
+.back-link a{color:var(--green);font-weight:500;text-decoration:none}
+.err{background:#fef2f2;color:var(--error);border:1px solid #fecaca;
+  border-radius:8px;padding:10px 14px;font-size:13px;margin-top:12px;display:none}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;z-index:1000}
+.modal-overlay.show{display:flex}
+.modal{background:white;border-radius:24px;padding:40px 36px;width:100%;max-width:400px;
+  animation:rise .35s cubic-bezier(.34,1.56,.64,1) both;box-shadow:0 30px 80px rgba(0,0,0,.2)}
+.modal-step{display:none}.modal-step.active{display:block}
+.modal h2{font-family:'Playfair Display',serif;font-size:22px;color:var(--green-dark);margin-bottom:6px}
+.modal p{color:var(--muted);font-size:13px;margin-bottom:22px;line-height:1.5}
+.step-indicator{display:flex;gap:6px;margin-bottom:24px}
+.step-dot{height:4px;border-radius:2px;flex:1;background:var(--border);transition:background .3s}
+.step-dot.done{background:var(--green)}
+.modal-actions{display:flex;gap:10px;margin-top:20px}
+.btn-ghost{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);flex:1}
+.btn-ghost:hover{background:var(--border)}
+.msg{font-size:13px;padding:10px 14px;border-radius:8px;margin-top:12px;display:none}
+.msg.error{background:#fef2f2;color:var(--error);border:1px solid #fecaca;display:block}
+.success-icon{text-align:center;font-size:52px;margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="brand">
+    <span class="brand-icon">👨‍🌾</span>
+    <h1>FarmConnect</h1>
+    <p>Farmer Portal</p>
+  </div>
+
+  <div class="form-group">
+    <label>Mobile / Email</label>
+    <input id="phone" placeholder="Enter mobile number or email">
+  </div>
+  <div class="form-group">
+    <label>Password</label>
+    <input id="password" type="password" placeholder="Enter password">
+    <span class="forgot-link" onclick="openModal()">Forgot Password?</span>
+  </div>
+  <div id="loginErr" class="err"></div>
+  <button class="btn btn-primary" id="loginBtn" onclick="login()">Login</button>
+
+  <div class="back-link"><a href="index.html">← Back to Home</a></div>
+</div>
+
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+<div class="modal">
+  <div class="step-indicator">
+    <div class="step-dot done" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+
+  <div class="modal-step active" id="step1">
+    <h2>🔐 Forgot Password</h2>
+    <p>Enter your registered mobile or email to continue.</p>
+    <div class="form-group"><label>Mobile / Email</label>
+      <input id="resetId" placeholder="Enter mobile or email"></div>
+    <div id="msg1" class="msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="step1Next()">Continue →</button>
+    </div>
+  </div>
+
+  <div class="modal-step" id="step2">
+    <h2>🛡️ Security Check</h2>
+    <p>Answer your security question to verify identity.</p>
+    <div class="form-group"><label id="questionLabel">Security Question</label>
+      <input id="secAnswer" placeholder="Your answer"></div>
+    <div id="msg2" class="msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" style="flex:1" onclick="step2Next()">Verify →</button>
+    </div>
+  </div>
+
+  <div class="modal-step" id="step3">
+    <h2>🔑 New Password</h2>
+    <p>Set a strong new password for your account.</p>
+    <div class="form-group"><label>New Password</label>
+      <input id="newPass" type="password" placeholder="Minimum 6 characters"></div>
+    <div class="form-group"><label>Confirm Password</label>
+      <input id="confirmPass" type="password" placeholder="Re-enter password"></div>
+    <div id="msg3" class="msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" style="flex:1" onclick="step3Next()">Reset →</button>
+    </div>
+  </div>
+
+  <div class="modal-step" id="step4">
+    <div class="success-icon">✅</div>
+    <h2>Password Reset!</h2>
+    <p>Your password has been updated. You can now log in.</p>
+    <button class="btn btn-primary" style="margin-top:10px" onclick="closeModal()">Back to Login</button>
+  </div>
+</div>
+</div>
+
+<script>
+const API = "http://localhost:5000";
+let foundUser = null;
+
+// ===== DEFAULT FARMER DATA (fallback when server is offline) =====
+function getFarmers() {
+  return JSON.parse(localStorage.getItem("farmers_security")) || [
+    {
+      id: "FARM001",
+      name: "Ramesh Kumar",
+      phone: "9876543210",
+      email: "ramesh@email.com",
+      password: "farmer123",
+      question: "What was your first crop?",
+      answer: "wheat"
+    },
+    {
+      id: "FARM002",
+      name: "Suresh Patil",
+      phone: "9123456780",
+      email: "suresh@email.com",
+      password: "farmer123",
+      question: "What is the name of your village?",
+      answer: "pune"
+    }
+  ];
+}
+
+async function login() {
+    const phone    = document.getElementById("phone").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const err      = document.getElementById("loginErr");
+    const btn      = document.getElementById("loginBtn");
+
+    if (!phone || !password) { showErr(err, "Please fill all fields"); return; }
+
+    btn.disabled  = true;
+    btn.innerText = "Logging in...";
+
+    // --- Try API first ---
+    try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(API + "/api/farmer/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone, password }),
+            signal: controller.signal
+        });
+        clearTimeout(tid);
+        const data = await res.json();
+
+        if (data.success) {
+            localStorage.setItem("farmerId",   data.farmer.farmer_id);
+            localStorage.setItem("farmerName", data.farmer.name);
+            localStorage.setItem("farmerPhone", data.farmer.phone);
+            window.location.href = "farmer.html";
+            return;
+        }
+        // Server up but wrong credentials
+        showErr(err, data.message || "Invalid credentials");
+        btn.disabled  = false;
+        btn.innerText = "Login";
+        return;
+    } catch (_) {
+        // Server offline — fall through to localStorage fallback
+    }
+
+    // --- localStorage fallback ---
+    const farmers = getFarmers();
+    const found   = farmers.find(f =>
+        (f.phone === phone || f.email.toLowerCase() === phone.toLowerCase()) &&
+        f.password === password
+    );
+
+    if (found) {
+        localStorage.setItem("farmerId",    found.id);
+        localStorage.setItem("farmerName",  found.name);
+        localStorage.setItem("farmerPhone", found.phone);
+        window.location.href = "farmer.html";
+    } else {
+        showErr(err, "Invalid credentials. Check your mobile/email and password.");
+    }
+
+    btn.disabled  = false;
+    btn.innerText = "Login";
+}
+
+function showErr(el, msg) { el.innerText = msg; el.style.display = "block"; }
+function clearMsg() { ["msg1","msg2","msg3"].forEach(id => { const e=document.getElementById(id); if(e){e.className="msg";e.textContent="";} }); }
+function showMsg(id, text, type) { const e=document.getElementById(id); e.textContent=text; e.className="msg "+type; }
+
+function openModal() { document.getElementById("modalOverlay").classList.add("show"); goStep(1); }
+function closeModal() { document.getElementById("modalOverlay").classList.remove("show"); foundUser=null; clearMsg(); }
+
+function goStep(n) {
+    document.querySelectorAll(".modal-step").forEach((s,i)=>s.classList.toggle("active",i===n-1));
+    document.querySelectorAll(".step-dot").forEach((d,i)=>d.classList.toggle("done",i<n));
+    clearMsg();
+}
+
+async function step1Next() {
+    const val = document.getElementById("resetId").value.trim();
+    if (!val) { showMsg("msg1","Please enter your mobile or email.","error"); return; }
+
+    // Try API
+    try {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(API + "/api/forgot-password/question", {
+            method:"POST", headers:{"Content-Type":"application/json"},
+            body: JSON.stringify({ role:"farmer", identifier: val }),
+            signal: controller.signal
+        });
+        const data = await res.json();
+        if (data.success) {
+            foundUser = { identifier: val, source: "api" };
+            document.getElementById("questionLabel").textContent = data.question;
+            document.getElementById("secAnswer").value = "";
+            goStep(2);
+            return;
+        }
+        showMsg("msg1", data.message || "Account not found.","error");
+        return;
+    } catch (_) { /* Server offline */ }
+
+    // localStorage fallback
+    const farmers = getFarmers();
+    const user = farmers.find(f =>
+        f.phone === val || f.email.toLowerCase() === val.toLowerCase()
+    );
+    if (!user) { showMsg("msg1","No account found with that mobile or email.","error"); return; }
+    foundUser = { ...user, source: "local" };
+    document.getElementById("questionLabel").textContent = user.question;
+    document.getElementById("secAnswer").value = "";
+    goStep(2);
+}
+
+async function step2Next() {
+    const answer = document.getElementById("secAnswer").value.trim();
+    if (!answer) { showMsg("msg2","Please enter your answer.","error"); return; }
+    if (foundUser.source === "local") {
+        if (answer.toLowerCase() !== foundUser.answer.toLowerCase()) {
+            showMsg("msg2","Incorrect answer. Please try again.","error"); return;
+        }
+    }
+    foundUser.answer = answer;
+    goStep(3);
+}
+
+async function step3Next() {
+    const np = document.getElementById("newPass").value;
+    const cp = document.getElementById("confirmPass").value;
+    if (np.length < 6) { showMsg("msg3","Password must be at least 6 characters.","error"); return; }
+    if (np !== cp) { showMsg("msg3","Passwords do not match.","error"); return; }
+
+    if (foundUser.source === "api") {
+        try {
+            const res = await fetch(API + "/api/forgot-password", {
+                method:"POST", headers:{"Content-Type":"application/json"},
+                body: JSON.stringify({ role:"farmer", identifier: foundUser.identifier, security_answer: foundUser.answer, new_password: np })
+            });
+            const data = await res.json();
+            if (data.success) { goStep(4); return; }
+            showMsg("msg3", data.message || "Incorrect security answer.","error"); return;
+        } catch { showMsg("msg3","Server error. Try again.","error"); return; }
+    }
+
+    // localStorage fallback reset
+    const farmers = getFarmers();
+    const idx = farmers.findIndex(f => f.id === foundUser.id);
+    if (idx !== -1) { farmers[idx].password = np; localStorage.setItem("farmers_security", JSON.stringify(farmers)); }
+    goStep(4);
+}
+
+document.getElementById("modalOverlay").addEventListener("click", function(e){ if(e.target===this) closeModal(); });
+document.getElementById("password").addEventListener("keydown", e => { if(e.key==="Enter") login(); });
+</script>
+</body>
+</html>

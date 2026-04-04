@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Payments & Orders | FarmConnect</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="style.css">
+
+<!-- CHART -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{background:#f5f7fa;font-family:Arial}
+.section{
+    background:white;
+    margin:20px;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:15px;
+}
+.card{padding:15px;border-radius:10px;background:#f9fafb}
+.green{color:#16a34a;font-size:22px;font-weight:bold}
+.red{color:#dc2626;font-size:22px;font-weight:bold}
+.order{border-bottom:1px solid #eee;padding:10px 0}
+.btn{
+    padding:6px 10px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    margin-right:5px;
+}
+.approve{background:#16a34a;color:white}
+.decline{background:#dc2626;color:white}
+.refund{background:#f97316;color:white}
+.invoice{background:#2563eb;color:white}
+</style>
+</head>
+
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+    <button onclick="history.back()">⬅ Back</button>
+    <h3>💳 Payments & 📦 Orders</h3>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<!-- PAYMENTS -->
+<div class="section">
+<h2>💳 Payments Overview</h2>
+
+<div class="grid">
+    <div class="card">
+        Total Received
+        <div class="green" id="received">₹0</div>
+    </div>
+    <div class="card">
+        Refunds
+        <div class="red" id="refunds">₹0</div>
+    </div>
+    <div class="card">
+        Remaining Balance
+        <div id="balance">₹0</div>
+    </div>
+    <div class="card">
+        Profit / Loss
+        <div id="profit">₹0</div>
+    </div>
+</div>
+
+<br>
+<h3>💰 Payment Methods</h3>
+<ul>
+    <li>📱 UPI – Google Pay / PhonePe / Paytm</li>
+    <li>💳 Debit Card – RuPay / Visa</li>
+    <li>💳 Credit Card – Visa / MasterCard / AmEx</li>
+</ul>
+
+<canvas id="chart"></canvas>
+</div>
+
+<!-- ORDERS -->
+<div class="section">
+<h2>📦 Orders</h2>
+<div id="orders"></div>
+</div>
+
+<script>
+/* LOGOUT */
+function logout(){
+    localStorage.clear();
+    window.location.href="index.html";
+}
+
+/* PAYMENTS DATA */
+let payments = JSON.parse(localStorage.getItem("payments")) || {
+    received: 25000,
+    refunds: 3000,
+    cost: 18000
+};
+
+let balance = payments.received - payments.refunds;
+let profit = payments.received - payments.cost;
+
+document.getElementById("received").innerText = "₹" + payments.received;
+document.getElementById("refunds").innerText = "₹" + payments.refunds;
+document.getElementById("balance").innerText = "₹" + balance;
+document.getElementById("profit").innerText = "₹" + profit;
+
+localStorage.setItem("payments", JSON.stringify(payments));
+
+/* CHART */
+new Chart(document.getElementById("chart"),{
+    type:"bar",
+    data:{
+        labels:["Received","Cost","Refunds","Profit"],
+        datasets:[{
+            data:[
+                payments.received,
+                payments.cost,
+                payments.refunds,
+                profit
+            ],
+            backgroundColor:["#22c55e","#3b82f6","#ef4444","#16a34a"]
+        }]
+    },
+    options:{plugins:{legend:{display:false}}}
+});
+
+/* ORDERS DATA */
+let orders = JSON.parse(localStorage.getItem("orders")) || [
+    {id:1,crop:"Wheat",qty:100,price:5000,status:"Received"},
+    {id:2,crop:"Rice",qty:50,price:4000,status:"Approved"},
+    {id:3,crop:"Tomato",qty:80,price:2000,status:"Refunded"}
+];
+
+function render(){
+    const box=document.getElementById("orders");
+    box.innerHTML="";
+    orders.forEach(o=>{
+        box.innerHTML+=`
+        <div class="order">
+            <b>${o.crop}</b> | ${o.qty} kg | ₹${o.price}<br>
+            Status: <b>${o.status}</b><br><br>
+            <button class="btn approve" onclick="update(${o.id},'Approved')">Approve</button>
+            <button class="btn decline" onclick="update(${o.id},'Declined')">Decline</button>
+            <button class="btn refund" onclick="update(${o.id},'Refunded')">Refund</button>
+            <button class="btn invoice" onclick="invoice(${o.id})">Invoice</button>
+        </div>`;
+    });
+    localStorage.setItem("orders",JSON.stringify(orders));
+}
+
+function update(id,status){
+    orders=orders.map(o=>o.id===id?{...o,status}:o);
+    render();
+}
+
+function invoice(id){
+    const o=orders.find(x=>x.id===id);
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF();
+    pdf.text("FarmConnect Invoice",20,20);
+    pdf.text("Order ID: "+o.id,20,40);
+    pdf.text("Crop: "+o.crop,20,50);
+    pdf.text("Quantity: "+o.qty+" kg",20,60);
+    pdf.text("Amount: ₹"+o.price,20,70);
+    pdf.text("Status: "+o.status,20,80);
+    pdf.save("invoice_"+o.id+".pdf");
+}
+
+render();
+</script>
+
+</body>
+</html>

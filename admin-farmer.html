@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Farmer Profile | Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{margin:0;background:#f1f5f9;font-family:Arial}
+.header{
+    background:#0f172a;color:#fff;
+    padding:20px 30px;
+    display:flex;justify-content:space-between;align-items:center
+}
+.badge{padding:6px 14px;border-radius:20px;font-size:13px}
+.active{background:#22c55e;color:#052e16}
+.suspended{background:#facc15;color:#422006}
+.blocked{background:#ef4444;color:#450a0a}
+.actions button{
+    padding:8px 14px;border:none;border-radius:8px;
+    font-weight:600;margin-left:8px;cursor:pointer
+}
+.btn-green{background:#22c55e}
+.btn-yellow{background:#facc15}
+.btn-red{background:#ef4444}
+.container{padding:30px;max-width:1200px;margin:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.card{
+    background:#fff;border-radius:16px;padding:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,.08)
+}
+table{width:100%;border-collapse:collapse}
+th,td{padding:12px;border-bottom:1px solid #eee}
+th{background:#2563eb;color:#fff}
+.back{color:#2563eb;font-weight:600;cursor:pointer}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <div>
+        <h2 id="name"></h2>
+        <p>Farmer ID: <b id="fid"></b></p>
+        <p>Status: <span id="status" class="badge"></span></p>
+    </div>
+    <div class="actions">
+        <button class="btn-green" onclick="setStatus('Active')">Activate</button>
+        <button class="btn-yellow" onclick="setStatus('Suspended')">Suspend</button>
+        <button class="btn-red" onclick="setStatus('Blocked')">Block</button>
+    </div>
+</div>
+
+<div class="container">
+<span class="back" onclick="goBack()">← Back to Dashboard</span>
+
+<div class="grid">
+    <div class="card">
+        <h3>Profile</h3>
+        <p><b>Location:</b> <span id="location"></span></p>
+        <p><b>Phone:</b> <span id="phone"></span></p>
+        <p><b>Joined:</b> <span id="joined"></span></p>
+    </div>
+
+    <div class="card">
+        <h3>Total Sales</h3>
+        <h2>₹<span id="sales"></span></h2>
+    </div>
+
+    <div class="card">
+        <h3>Total Refunds</h3>
+        <h2>₹<span id="refunds"></span></h2>
+    </div>
+
+    <div class="card">
+        <h3>Net Earnings</h3>
+        <h2>₹<span id="earnings"></span></h2>
+    </div>
+</div>
+
+<div class="card" style="margin-top:30px">
+<h3>Products</h3>
+<table>
+<tr><th>Name</th><th>Price</th><th>Quality</th></tr>
+<tbody id="products"></tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top:30px">
+<h3>Refund Requests</h3>
+<table>
+<tr><th>Order</th><th>Amount</th><th>Reason</th><th>Status</th><th>Action</th></tr>
+<tbody id="refundsTable"></tbody>
+</table>
+</div>
+
+</div>
+
+<script>
+const fid = Number(new URLSearchParams(location.search).get("fid"));
+const farmers = JSON.parse(localStorage.getItem("farmers_full_data")) || [];
+const farmer = farmers.find(f => f.id === fid);
+
+/* BASIC */
+document.getElementById("fid").innerText = farmer.id;
+document.getElementById("name").innerText = farmer.name;
+document.getElementById("location").innerText = farmer.location;
+document.getElementById("phone").innerText = farmer.phone;
+document.getElementById("joined").innerText = farmer.joined;
+
+/* STATUS */
+const st=document.getElementById("status");
+st.innerText=farmer.status;
+st.className="badge "+farmer.status.toLowerCase();
+
+/* METRICS */
+const refundTotal=farmer.refunds.filter(r=>r.status==="Approved")
+.reduce((s,r)=>s+r.amount,0);
+document.getElementById("sales").innerText=farmer.sales;
+document.getElementById("refunds").innerText=refundTotal;
+document.getElementById("earnings").innerText=farmer.sales-refundTotal;
+
+/* PRODUCTS */
+document.getElementById("products").innerHTML=
+farmer.products.map(p=>`
+<tr><td>${p.name}</td><td>₹${p.price}</td><td>⭐ ${p.quality}</td></tr>
+`).join("");
+
+/* REFUNDS */
+document.getElementById("refundsTable").innerHTML=
+farmer.refunds.map((r,i)=>`
+<tr>
+<td>${r.order}</td>
+<td>₹${r.amount}</td>
+<td>${r.reason}</td>
+<td>${r.status}</td>
+<td>${r.status==="Pending"?
+`<button onclick="approveRefund(${i})">Approve</button>`:"—"}</td>
+</tr>
+`).join("");
+
+function approveRefund(i){
+    farmer.refunds[i].status="Approved";
+    save();
+}
+function setStatus(s){
+    farmer.status=s;
+    save();
+}
+function save(){
+    localStorage.setItem("farmers_full_data",JSON.stringify(farmers));
+    location.reload();
+}
+function goBack(){
+    window.location.href="admin-dashboard.html";
+}
+
+</script>
+
+</body>
+</html>

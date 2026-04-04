@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Payments | FarmConnect</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{background:#f5f7fa;font-family:Arial}
+.section{
+    background:white;
+    margin:20px;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:15px;
+}
+.card{
+    background:#f9fafb;
+    padding:15px;
+    border-radius:10px;
+}
+.green{color:#16a34a;font-size:22px;font-weight:bold}
+.red{color:#dc2626;font-size:22px;font-weight:bold}
+</style>
+</head>
+
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+    <button onclick="goBack()">⬅ Back</button>
+    <h3>💳 Payments</h3>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<div class="section">
+<h2>💰 Payment Summary</h2>
+
+<div class="grid">
+    <div class="card">
+        Total Received
+        <div class="green" id="received">₹0</div>
+    </div>
+    <div class="card">
+        Refunds
+        <div class="red" id="refunds">₹0</div>
+    </div>
+    <div class="card">
+        Remaining Balance
+        <div id="balance">₹0</div>
+    </div>
+    <div class="card">
+        Profit / Loss
+        <div id="profit">₹0</div>
+    </div>
+</div>
+
+<br>
+<h3>💳 Payment Methods</h3>
+<ul>
+    <li>📱 UPI – Google Pay / PhonePe / Paytm</li>
+    <li>💳 Debit Card – RuPay / Visa</li>
+    <li>💳 Credit Card – Visa / MasterCard / AmEx</li>
+</ul>
+
+<canvas id="paymentChart"></canvas>
+</div>
+
+<script src="script.js"></script>
+<script>
+let payments = JSON.parse(localStorage.getItem("payments")) || {
+    received: 25000,
+    refunds: 3000,
+    cost: 18000
+};
+
+let balance = payments.received - payments.refunds;
+let profit = payments.received - payments.cost;
+
+document.getElementById("received").innerText = "₹" + payments.received;
+document.getElementById("refunds").innerText = "₹" + payments.refunds;
+document.getElementById("balance").innerText = "₹" + balance;
+document.getElementById("profit").innerText = "₹" + profit;
+
+localStorage.setItem("payments", JSON.stringify(payments));
+
+new Chart(document.getElementById("paymentChart"),{
+    type:"bar",
+    data:{
+        labels:["Received","Cost","Refunds","Profit"],
+        datasets:[{
+            data:[
+                payments.received,
+                payments.cost,
+                payments.refunds,
+                profit
+            ],
+            backgroundColor:["#22c55e","#3b82f6","#ef4444","#16a34a"]
+        }]
+    },
+    options:{plugins:{legend:{display:false}}}
+});
+</script>
+
+</body>
+</html>

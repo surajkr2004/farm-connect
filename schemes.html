@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Government Schemes - FarmConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="topbar">
+    <button onclick="goBack()">⬅ Back</button>
+    <h3>🌾 FarmConnect</h3>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<h2>🏛 Government Schemes</h2>
+
+<div class="container">
+    <input id="land" type="number" placeholder="Land in Acres" min="0">
+    <button onclick="checkScheme()">Check Eligibility</button>
+
+    <p id="schemeResult"></p>
+</div>
+
+<script>
+function checkScheme() {
+    const land = parseFloat(document.getElementById("land").value);
+
+    if (isNaN(land) || land <= 0) {
+        document.getElementById("schemeResult").innerText =
+            "❌ Please enter a valid land area.";
+        return;
+    }
+
+    if (land >= 1) {
+        document.getElementById("schemeResult").innerText =
+            "✅ Eligible for PM-KISAN Scheme (₹6,000/year)";
+    } else {
+        document.getElementById("schemeResult").innerText =
+            "❌ Minimum 1 acre required for PM-KISAN eligibility.";
+    }
+}
+</script>
+
+<script src="script.js"></script>
+</body>
+</html>

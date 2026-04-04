@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Buyer Profile</title>
+<style>
+body{margin:0;font-family:Arial;background:#f1f5f9}
+.header{
+  background:#0f172a;color:white;
+  padding:20px;display:flex;
+  justify-content:space-between;align-items:center
+}
+.badge{padding:6px 14px;border-radius:20px}
+.active{background:#22c55e}
+.blocked{background:#ef4444}
+.suspended{background:#facc15;color:black}
+button{padding:8px 14px;border:none;border-radius:8px;margin-left:6px;cursor:pointer}
+.container{padding:30px;max-width:1100px;margin:auto}
+.card{
+  background:white;padding:20px;
+  border-radius:14px;margin-bottom:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08)
+}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #eee}
+th{background:#2563eb;color:white}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div>
+    <h2 id="name"></h2>
+    <p>Buyer ID: <b id="bid"></b></p>
+    <p>Status: <span id="status" class="badge"></span></p>
+  </div>
+  <div>
+    <button onclick="setStatus('Active')">Activate</button>
+    <button onclick="setStatus('Suspended')">Suspend</button>
+    <button onclick="setStatus('Blocked')">Block</button>
+  </div>
+</div>
+
+<div class="container">
+
+<div class="card">
+<h3>Profile</h3>
+<p><b>Phone:</b> <span id="phone"></span></p>
+<p><b>City:</b> <span id="city"></span></p>
+<p><b>Joined:</b> <span id="joined"></span></p>
+</div>
+
+<div class="card">
+<h3>Orders Summary</h3>
+<p>Total Orders: <b id="ordersCount"></b></p>
+<p>Total Spend: ₹<b id="totalSpend"></b></p>
+</div>
+
+<div class="card">
+<h3>Refund Requests</h3>
+<table>
+<tr>
+<th>Refund ID</th><th>Order</th><th>Amount</th><th>Status</th><th>Action</th>
+</tr>
+<tbody id="refundsTable"></tbody>
+</table>
+</div>
+
+</div>
+
+<script src="data.js"></script>
+
+<script>
+const DBLS = JSON.parse(localStorage.getItem("DB"));
+const bid = new URLSearchParams(location.search).get("bid");
+
+const buyer = DBLS.buyers.find(b=>b.id===bid);
+
+document.getElementById("bid").innerText = buyer.id;
+document.getElementById("name").innerText = buyer.name;
+document.getElementById("phone").innerText = buyer.phone;
+document.getElementById("city").innerText = buyer.city;
+document.getElementById("joined").innerText = buyer.joined;
+document.getElementById("ordersCount").innerText = buyer.orders.length;
+document.getElementById("totalSpend").innerText = buyer.totalSpend;
+
+const statusEl = document.getElementById("status");
+statusEl.innerText = buyer.status;
+statusEl.className = "badge " + buyer.status.toLowerCase();
+
+const refundsTable = document.getElementById("refundsTable");
+
+buyer.refunds.forEach((r,i)=>{
+  refundsTable.innerHTML += `
+  <tr>
+    <td>${r.refundId}</td>
+    <td>${r.orderId}</td>
+    <td>₹${r.amount}</td>
+    <td>${r.status}</td>
+    <td>
+      ${r.status==="Pending"
+        ? `<button onclick="approveRefund(${i})">Approve</button>
+           <button onclick="rejectRefund(${i})">Reject</button>`
+        : "—"}
+    </td>
+  </tr>`;
+});
+
+function approveRefund(i){
+  buyer.refunds[i].status = "Approved";
+  save();
+}
+function rejectRefund(i){
+  buyer.refunds[i].status = "Rejected";
+  save();
+}
+function setStatus(s){
+  buyer.status = s;
+  save();
+}
+function save(){
+  localStorage.setItem("DB", JSON.stringify(DBLS));
+  location.reload();
+}
+
+</script>
+
+</body>
+</html>

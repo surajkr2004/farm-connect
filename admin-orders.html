@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin | Orders</title>
+<style>
+body{margin:0;font-family:Arial;background:#f1f5f9}
+h1{margin:20px}
+table{width:96%;margin:20px auto;border-collapse:collapse;background:#fff}
+th,td{padding:12px;border-bottom:1px solid #eee}
+th{background:#2563eb;color:white}
+.badge{padding:5px 10px;border-radius:14px;font-size:12px}
+.pending{background:#facc15}
+.delivered{background:#22c55e;color:#052e16}
+.cancelled{background:#ef4444;color:#450a0a}
+.refund{background:#9333ea;color:white}
+button{padding:6px 10px;border:none;border-radius:6px;cursor:pointer}
+</style>
+</head>
+
+<body>
+
+<h1>Orders Management</h1>
+
+<table id="ordersTable">
+<tr>
+  <th>Order ID</th>
+  <th>Buyer</th>
+  <th>Product</th>
+  <th>Total</th>
+  <th>Status</th>
+  <th>Refund</th>
+  <th>Fraud</th>
+  <th>Action</th>
+</tr>
+</table>
+
+<script src="data.js"></script>
+
+<script>
+const DBLS = JSON.parse(localStorage.getItem("DB"));
+const table = document.getElementById("ordersTable");
+
+DBLS.orders.forEach(o=>{
+  table.innerHTML += `
+  <tr>
+    <td>${o.id}</td>
+    <td>${o.buyerName}<br><small>${o.buyerId}</small></td>
+    <td>${o.productName}</td>
+    <td>₹${o.total}</td>
+    <td><span class="badge ${o.status.toLowerCase()}">${o.status}</span></td>
+    <td>${o.refundId ? `<span class="badge refund">Yes</span>` : "No"}</td>
+    <td>${o.fraud ? "⚠" : "—"}</td>
+    <td>
+      <button onclick="openOrder('${o.id}')">View</button>
+    </td>
+  </tr>`;
+});
+
+function openOrder(oid){
+  window.location.href = "admin-order.html?oid=" + oid;
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Produce - FarmConnect</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+
+<div class="topbar">
+    <button onclick="goBack()">⬅ Back</button>
+    <h3>🌾 FarmConnect</h3>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<h2>🌾 Upload Produce</h2>
+
+<div class="container">
+    <input id="crop" placeholder="Crop Name">
+    <input id="quantity" type="number" placeholder="Quantity (kg)" min="1">
+    <input id="price" type="number" placeholder="Expected Price (₹ per kg)" min="1">
+    <select id="category">
+        <option value="">Select Category</option>
+        <option>Grains</option>
+        <option>Vegetables</option>
+        <option>Fruits</option>
+        <option>Dairy</option>
+        <option>Spices</option>
+    </select>
+    <button onclick="saveProduce()">Submit for Approval</button>
+    <p id="msg"></p>
+</div>
+
+<script src="script.js"></script>
+<script>
+const farmerId = localStorage.getItem("farmerId");
+const farmerName = localStorage.getItem("farmerName");
+
+if (!farmerId) {
+    window.location.href = "farmer-login.html";
+}
+
+async function saveProduce() {
+    const crop     = document.getElementById("crop").value.trim();
+    const qty      = document.getElementById("quantity").value;
+    const price    = document.getElementById("price").value;
+    const category = document.getElementById("category").value;
+    const msgEl    = document.getElementById("msg");
+
+    if (!crop || !qty || !price || !category) {
+        msgEl.innerText = "❌ Please fill all fields.";
+        return;
+    }
+
+    try {
+        const res = await fetch("http://localhost:5000/api/products/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                farmer_id: farmerId,
+                name:      crop,
+                quantity:  Number(qty),
+                price:     Number(price),
+                category:  category
+            })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            msgEl.innerText = "✅ Produce submitted for admin approval!";
+            document.getElementById("crop").value = "";
+            document.getElementById("quantity").value = "";
+            document.getElementById("price").value = "";
+            document.getElementById("category").value = "";
+        } else {
+            msgEl.innerText = "❌ " + (data.message || "Upload failed.");
+        }
+    } catch {
+        // Fallback: save to localStorage if server is offline
+        const DB = JSON.parse(localStorage.getItem("DB")) || { products: [] };
+        DB.products.push({
+            id:         "PROD" + Date.now(),
+            name:       crop,
+            quantity:   Number(qty),
+            price:      Number(price),
+            category:   category,
+            farmerId:   farmerId,
+            farmerName: farmerName || "Unknown",
+            status:     "Pending",
+            orders:     []
+        });
+        localStorage.setItem("DB", JSON.stringify(DB));
+        msgEl.innerText = "✅ Saved locally — will sync when server is online.";
+    }
+}
+</script>
+</body>
+</html>

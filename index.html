@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FarmConnect</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+/* TOP BAR */
+.topbar{
+    height:60px;
+    background:#ffffff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+    position:relative;
+    z-index:1000;
+}
+
+.logo{
+    font-size:22px;
+    font-weight:bold;
+    color:#15803d;
+}
+
+.menu-btn{
+    font-size:26px;
+    cursor:pointer;
+}
+
+/* SIDE MENU */
+.side-menu{
+    position:fixed;
+    top:0;
+    right:-320px;
+    width:300px;
+    height:100%;
+    background:#ffffff;
+    box-shadow:-4px 0 12px rgba(0,0,0,0.2);
+    padding:20px;
+    transition:0.3s;
+    overflow-y:auto;
+    z-index:999;
+}
+
+.side-menu.open{
+    right:0;
+}
+
+.side-menu h3{
+    margin:15px 0 8px;
+    font-size:14px;
+    color:#555;
+    border-bottom:1px solid #eee;
+    padding-bottom:5px;
+}
+
+.side-menu a{
+    display:block;
+    padding:10px;
+    margin:5px 0;
+    background:#f1f5f9;
+    border-radius:6px;
+    text-decoration:none;
+    color:#000;
+    cursor:pointer;
+}
+
+.side-menu a:hover{
+    background:#dcfce7;
+}
+
+.side-menu select{
+    width:100%;
+    margin-top:8px;
+    padding:8px;
+    border-radius:6px;
+}
+
+/* OVERLAY */
+.overlay{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.4);
+    display:none;
+    z-index:998;
+}
+
+.overlay.show{
+    display:block;
+}
+
+/* HERO SLIDER */
+.hero-slider{
+    position:relative;
+    height:calc(100vh - 60px);
+    width:100%;
+    overflow:hidden;
+}
+
+.hero-slider img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transition:opacity 0.6s ease-in-out;
+}
+
+.hero-overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+}
+
+.hero-content{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    text-align:center;
+    color:white;
+    max-width:800px;
+    padding:20px;
+}
+
+.hero-content h1{
+    font-size:48px;
+    margin-bottom:15px;
+}
+
+.hero-content p{
+    font-size:18px;
+    margin-bottom:30px;
+}
+
+.hero-buttons{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+}
+
+.hero-buttons button{
+    padding:14px 24px;
+    font-size:16px;
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    background:#16a34a;
+    color:white;
+}
+
+.hero-buttons .outline{
+    background:transparent;
+    border:2px solid #16a34a;
+    color:#16a34a;
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+    .hero-content h1{font-size:32px;}
+    .hero-buttons{flex-direction:column;}
+}
+</style>
+</head>
+
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="logo">🌾 FarmConnect</div>
+    <div class="menu-btn" onclick="toggleMenu()">☰</div>
+</div>
+
+<!-- SIDE MENU -->
+<div class="side-menu" id="menu">
+
+    <h3>🔐 Login / Register</h3>
+    <a onclick="go('admin-login.html')">🧑‍💼 Admin Login</a>
+    <a onclick="go('buyer-login.html')">🛒 Buyer Login</a>
+    <a onclick="go('farmer-login.html')">👨‍🌾 Farmer Login</a>
+    <a onclick="go('register.html')">📝 Register</a>
+
+    <h3>⚙ Settings</h3>
+
+    🌐 Language
+    <select onchange="changeLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="sa">Sanskrit</option>
+    </select>
+
+    🎨 Theme
+    <select onchange="changeTheme(this.value)">
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+        <option value="system">System</option>
+    </select>
+
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+<!-- HERO SLIDER -->
+<section class="hero-slider">
+    <img id="heroImage" src="images/hero1.jpg" alt="Farm Image">
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content hero-text">
+        <h1>Connecting Farmers & Buyers</h1>
+        <p>Fresh produce • Fair prices • Direct trade • Smart agriculture</p>
+
+        <div class="hero-buttons">
+            <button onclick="go('buyer-login.html')">Buy Fresh Produce</button>
+            <button class="outline" onclick="go('farmer-login.html')">Sell Your Crops</button>
+        </div>
+    </div>
+</section>
+
+<script src="script.js"></script>
+
+<script>
+/* MENU TOGGLE */
+function toggleMenu(){
+    document.getElementById("menu").classList.toggle("open");
+    document.getElementById("overlay").classList.toggle("show");
+}
+
+/* HERO IMAGE SLIDER (LOCAL IMAGES) */
+const heroImages = [
+    "images/hero1.jpg",
+    "images/hero2.jpg",
+    "images/hero3.jpg",
+    "images/hero4.jpg"
+];
+
+let currentIndex = 0;
+const heroImg = document.getElementById("heroImage");
+
+setInterval(() => {
+    currentIndex = (currentIndex + 1) % heroImages.length;
+    heroImg.style.opacity = 0;
+
+    setTimeout(() => {
+        heroImg.src = heroImages[currentIndex];
+        heroImg.style.opacity = 1;
+    }, 600);
+
+}, 15000); // 1 minute
+</script>
+
+<!-- ===== FLOATING ACTION BUTTONS (LEFT SIDE, ABOVE BOTTOM) ===== -->
+<style>
+.floating-tabs{
+    position:fixed;
+    left:0;          /* 👈 LEFT SIDE */
+    bottom:120px;    /* 👈 little above bottom */
+    z-index:9999;
+    display:flex;
+    flex-direction:column;
+}
+
+.floating-tabs a{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:10px;
+    padding:10px 14px;
+    min-width:48px;
+    color:white;
+    text-decoration:none;
+    font-size:18px;
+    transition:0.3s;
+}
+
+.floating-tabs a span{
+    display:none;
+    font-size:14px;
+    white-space:nowrap;
+}
+
+.floating-tabs a:hover span{
+    display:inline;
+}
+
+/* COLORS */
+.call{background:#e91e63;}
+.about{background:#ff9800;}
+.whatsapp{background:#25d366;}
+</style>
+
+<div class="floating-tabs">
+
+    <!-- 📞 CALL -->
+    <a href="tel:+917654612124" class="call" title="Call Us">
+        📞 <span>+91-765-4612124</span>
+    </a>
+
+
+    <!-- 💬 WHATSAPP -->
+    <a href="https://wa.me/917654612124" target="_blank" class="whatsapp" title="WhatsApp">
+        💬 <span>WhatsApp</span>
+    </a>
+
+</div>
+
+
+
+</body>
+</html>

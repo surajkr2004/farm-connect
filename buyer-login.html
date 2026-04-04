@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Buyer Login - FarmConnect</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --green: #15803d;
+  --green-light: #22c55e;
+  --green-dark: #14532d;
+  --bg: #f0fdf4;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --error: #ef4444;
+  --shadow: 0 20px 60px rgba(21,128,61,0.12);
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  font-family: 'DM Sans', sans-serif;
+  background-image:
+    radial-gradient(ellipse at 20% 50%, rgba(34,197,94,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(21,128,61,0.06) 0%, transparent 50%);
+}
+
+.card {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(34,197,94,0.1);
+  animation: rise 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(30px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.brand {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.brand-icon {
+  font-size: 40px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.brand h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  color: var(--green-dark);
+}
+
+.brand p {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 4px;
+  font-weight: 300;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: #fafafa;
+  transition: all 0.2s;
+  outline: none;
+}
+
+input:focus, select:focus {
+  border-color: var(--green);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(21,128,61,0.08);
+}
+
+.btn {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--green), var(--green-light));
+  color: white;
+  margin-top: 8px;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(21,128,61,0.3);
+}
+
+.forgot-link {
+  display: block;
+  text-align: right;
+  font-size: 13px;
+  color: var(--green);
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 6px;
+  text-decoration: none;
+}
+
+.forgot-link:hover { text-decoration: underline; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-overlay.show { display: flex; }
+
+.modal {
+  background: white;
+  border-radius: 24px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 400px;
+  animation: rise 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.2);
+}
+
+.modal-step { display: none; }
+.modal-step.active { display: block; }
+
+.modal h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  color: var(--green-dark);
+  margin-bottom: 6px;
+}
+
+.modal p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 22px;
+  line-height: 1.5;
+}
+
+.step-indicator {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.step-dot {
+  height: 4px;
+  border-radius: 2px;
+  flex: 1;
+  background: var(--border);
+  transition: background 0.3s;
+}
+
+.step-dot.done { background: var(--green); }
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-ghost {
+  background: var(--bg);
+  color: var(--muted);
+  border: 1.5px solid var(--border);
+  flex: 1;
+}
+
+.btn-ghost:hover { background: var(--border); }
+
+.msg {
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-top: 12px;
+  display: none;
+}
+
+.msg.error { background: #fef2f2; color: var(--error); border: 1px solid #fecaca; display: block; }
+.msg.success { background: #f0fdf4; color: var(--green); border: 1px solid #bbf7d0; display: block; }
+
+.success-icon {
+  text-align: center;
+  font-size: 52px;
+  margin-bottom: 16px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="brand">
+    <span class="brand-icon">🛒</span>
+    <h1>FarmConnect</h1>
+    <p>Buyer Portal</p>
+  </div>
+
+  <div class="form-group">
+    <label>Email / Mobile</label>
+    <input id="email" type="text" placeholder="Enter your email or mobile">
+  </div>
+
+  <div class="form-group">
+    <label>Password</label>
+    <input id="password" type="password" placeholder="Enter password">
+    <span class="forgot-link" onclick="openModal()">Forgot Password?</span>
+  </div>
+
+  <button class="btn btn-primary" onclick="login()">Login</button>
+</div>
+
+<!-- ===== FORGOT PASSWORD MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay">
+<div class="modal">
+
+  <div class="step-indicator">
+    <div class="step-dot done" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+
+  <!-- STEP 1: Identify user -->
+  <div class="modal-step active" id="step1">
+    <h2>🔐 Forgot Password</h2>
+    <p>Enter your registered email or mobile number to get started.</p>
+    <div class="form-group">
+      <label>Email / Mobile</label>
+      <input id="resetEmail" placeholder="Enter registered email or mobile">
+    </div>
+    <div id="msg1" class="msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="step1Next()">Continue →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Security question -->
+  <div class="modal-step" id="step2">
+    <h2>🛡️ Security Check</h2>
+    <p>Answer your security question to verify your identity.</p>
+    <div class="form-group">
+      <label id="questionLabel">Security Question</label>
+      <input id="secAnswer" placeholder="Your answer">
+    </div>
+    <div id="msg2" class="msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
+      <button class="btn btn-primary" style="flex:1" onclick="step2Next()">Verify →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: New password -->
+  <div class="modal-step" id="step3">
+    <h2>🔑 New Password</h2>
+    <p>Choose a strong new password for your account.</p>
+    <div class="form-group">
+      <label>New Password</label>
+      <input id="newPass" type="password" placeholder="Minimum 6 characters">
+    </div>
+    <div class="form-group">
+      <label>Confirm Password</label>
+      <input id="confirmPass" type="password" placeholder="Re-enter new password">
+    </div>
+    <div id="msg3" class="msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-primary" style="flex:1" onclick="step3Next()">Reset →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Success -->
+  <div class="modal-step" id="step4">
+    <div class="success-icon">✅</div>
+    <h2>Password Reset!</h2>
+    <p>Your password has been updated successfully. You can now log in with your new password.</p>
+    <button class="btn btn-primary" style="margin-top:10px" onclick="closeModal()">Back to Login</button>
+  </div>
+
+</div>
+</div>
+
+<script>
+/* ===== DEMO USER DATA (mirrors localStorage structure) =====
+   In production, this would come from server.js / MySQL.
+   Here we store security Q&A alongside buyer credentials.
+   Format in localStorage key "buyers_security":
+   [ { email: "...", phone: "...", question: "...", answer: "...", password: "..." } ]
+*/
+
+function getBuyers() {
+  return JSON.parse(localStorage.getItem("buyers_security")) || [
+    {
+      id: "BUY001",
+      name: "Ankit Verma",
+      email: "ankit@email.com",
+      phone: "9876543210",
+      password: "buyer123",
+      question: "What is your mother's maiden name?",
+      answer: "sharma"
+    },
+    {
+      id: "BUY002",
+      name: "Rohit Sharma",
+      email: "rohit@email.com",
+      phone: "9123456780",
+      password: "rohit456",
+      question: "What was the name of your first pet?",
+      answer: "tommy"
+    }
+  ];
+}
+
+function saveBuyers(data) {
+  localStorage.setItem("buyers_security", JSON.stringify(data));
+}
+
+// ===== LOGIN =====
+async function login() {
+  const email    = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  if (!email || !password) { alert("Please fill all fields"); return; }
+
+  // --- Try API first (with a short timeout so it fails fast) ---
+  try {
+    const controller = new AbortController();
+    const tid = setTimeout(() => controller.abort(), 3000);
+    const response = await fetch("http://localhost:5000/api/buyer/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      signal: controller.signal
+    });
+    clearTimeout(tid);
+
+    const data = await response.json();
+    if (data.success) {
+      localStorage.setItem("buyerId",   data.buyer.buyer_id);
+      localStorage.setItem("buyerName", data.buyer.name);
+      window.location.href = "buyer.html";
+      return;
+    }
+    // API is up but credentials wrong — show server message, don't fall through
+    alert(data.message || "Invalid credentials");
+    return;
+  } catch (_) {
+    // Server offline or timed out — fall through to localStorage fallback
+  }
+
+  // --- localStorage fallback (works without backend) ---
+  const buyers = getBuyers();
+  const found  = buyers.find(b =>
+    (b.email.toLowerCase() === email.toLowerCase() || b.phone === email) &&
+    b.password === password
+  );
+
+  if (found) {
+    const buyerId   = found.id   || "BUY_LS_" + found.email.split("@")[0];
+    const buyerName = found.name || found.email.split("@")[0];
+    localStorage.setItem("buyerId",   buyerId);
+    localStorage.setItem("buyerName", buyerName);
+    window.location.href = "buyer.html";
+  } else {
+    alert("Invalid credentials. Check your email/mobile and password.");
+  }
+}
+
+// ===== MODAL =====
+let currentStep = 1;
+let foundUser = null;
+
+function openModal() {
+  document.getElementById("modalOverlay").classList.add("show");
+  goStep(1);
+}
+
+function closeModal() {
+  document.getElementById("modalOverlay").classList.remove("show");
+  foundUser = null;
+  clearMsg();
+}
+
+function goStep(n) {
+  currentStep = n;
+  document.querySelectorAll(".modal-step").forEach((s, i) => {
+    s.classList.toggle("active", i === n - 1);
+  });
+  document.querySelectorAll(".step-dot").forEach((d, i) => {
+    d.classList.toggle("done", i < n);
+  });
+  clearMsg();
+}
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = "msg " + type;
+}
+
+function clearMsg() {
+  ["msg1","msg2","msg3"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.className = "msg"; el.textContent = ""; }
+  });
+}
+
+// Step 1 — find user
+function step1Next() {
+  const val = document.getElementById("resetEmail").value.trim().toLowerCase();
+  if (!val) { showMsg("msg1", "Please enter your email or mobile.", "error"); return; }
+
+  const buyers = getBuyers();
+  const user = buyers.find(b =>
+    b.email.toLowerCase() === val || b.phone === val
+  );
+
+  if (!user) {
+    showMsg("msg1", "No account found with that email or mobile.", "error");
+    return;
+  }
+
+  foundUser = user;
+  document.getElementById("questionLabel").textContent = user.question;
+  document.getElementById("secAnswer").value = "";
+  goStep(2);
+}
+
+// Step 2 — verify security answer
+function step2Next() {
+  const answer = document.getElementById("secAnswer").value.trim().toLowerCase();
+  if (!answer) { showMsg("msg2", "Please enter your answer.", "error"); return; }
+
+  if (answer !== foundUser.answer.toLowerCase()) {
+    showMsg("msg2", "Incorrect answer. Please try again.", "error");
+    return;
+  }
+  goStep(3);
+}
+
+// Step 3 — set new password
+function step3Next() {
+  const np = document.getElementById("newPass").value;
+  const cp = document.getElementById("confirmPass").value;
+
+  if (np.length < 6) { showMsg("msg3", "Password must be at least 6 characters.", "error"); return; }
+  if (np !== cp) { showMsg("msg3", "Passwords do not match.", "error"); return; }
+
+  const buyers = getBuyers();
+  const idx = buyers.findIndex(b => b.email === foundUser.email || b.phone === foundUser.phone);
+  if (idx !== -1) { buyers[idx].password = np; saveBuyers(buyers); }
+
+  goStep(4);
+}
+
+// Close on overlay click
+document.getElementById("modalOverlay").addEventListener("click", function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Orders | FarmConnect</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{background:#f5f7fa;font-family:Arial}
+.section{
+    background:white;
+    margin:20px;
+    padding:20px;
+    border-radius:12px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+.order{
+    border-bottom:1px solid #eee;
+    padding:12px 0;
+}
+.btn{
+    padding:6px 10px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    margin-right:6px;
+}
+.approve{background:#16a34a;color:white}
+.decline{background:#dc2626;color:white}
+.refund{background:#f97316;color:white}
+.invoice{background:#2563eb;color:white}
+</style>
+</head>
+
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+    <button onclick="goBack()">⬅ Back</button>
+    <h3>📦 Orders</h3>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<div class="section" id="orders"></div>
+
+<script src="script.js"></script>
+<script>
+let orders = JSON.parse(localStorage.getItem("orders")) || [
+    {id:1,crop:"Wheat",qty:100,price:5000,status:"Received"},
+    {id:2,crop:"Rice",qty:50,price:4000,status:"Approved"},
+    {id:3,crop:"Tomato",qty:80,price:2000,status:"Refunded"}
+];
+
+function render(){
+    const box = document.getElementById("orders");
+    box.innerHTML = "<h2>📋 Order List</h2>";
+
+    orders.forEach(o=>{
+        box.innerHTML += `
+        <div class="order">
+            <b>${o.crop}</b> | ${o.qty} kg | ₹${o.price}<br>
+            Status: <b>${o.status}</b><br><br>
+            <button class="btn approve" onclick="update(${o.id},'Approved')">Approve</button>
+            <button class="btn decline" onclick="update(${o.id},'Declined')">Decline</button>
+            <button class="btn refund" onclick="update(${o.id},'Refunded')">Refund</button>
+            <button class="btn invoice" onclick="invoice(${o.id})">Invoice</button>
+        </div>`;
+    });
+
+    localStorage.setItem("orders", JSON.stringify(orders));
+}
+
+function update(id,status){
+    orders = orders.map(o => o.id === id ? {...o,status} : o);
+    render();
+}
+
+function invoice(id){
+    const o = orders.find(x => x.id === id);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+
+    pdf.text("FarmConnect Invoice",20,20);
+    pdf.text("Order ID: "+o.id,20,40);
+    pdf.text("Crop: "+o.crop,20,50);
+    pdf.text("Quantity: "+o.qty+" kg",20,60);
+    pdf.text("Amount: ₹"+o.price,20,70);
+    pdf.text("Status: "+o.status,20,80);
+
+    pdf.save("invoice_"+o.id+".pdf");
+}
+
+render();
+</script>
+
+</body>
+</html>
